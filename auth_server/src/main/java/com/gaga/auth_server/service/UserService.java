@@ -3,10 +3,11 @@ package com.gaga.auth_server.service;
 import com.gaga.auth_server.algorithm.Encryption;
 import com.gaga.auth_server.dto.MailDTO;
 import com.gaga.auth_server.dto.request.UserInfoRequestDTO;
-import com.gaga.auth_server.dto.request.UserLogInRequestDTO;
+import com.gaga.auth_server.dto.request.LoginDTO;
 import com.gaga.auth_server.dto.response.*;
 import com.gaga.auth_server.enums.TokenEnum;
 import com.gaga.auth_server.exception.NoExistEmailException;
+import com.gaga.auth_server.exception.NotFoundException;
 import com.gaga.auth_server.exception.UnauthorizedException;
 import com.gaga.auth_server.model.User;
 import com.gaga.auth_server.repository.UserInfoRepository;
@@ -34,8 +35,8 @@ public class UserService {
     private final StringRedisTemplate redisTemplate;
     private final CustomMailSender customMailSender;
     private final JwtUtils jwtUtils;
-    private Encryption encryption;
     private ResponseMessage responseMSG;
+    private Encryption encryption;
 
     public final int RANDOM_MIN_NUMBER = 10000;
     public final int RANDOM_MAX_NUMBER = 99999;
@@ -49,7 +50,7 @@ public class UserService {
         redisTemplate.setValueSerializer(new StringRedisSerializer());
     }
 
-    public DefaultResponseDTO insertUser(UserInfoRequestDTO userInfo) {
+    public String insertUser(UserInfoRequestDTO userInfo) {
         User user = findByEmail(userInfo.getEmail().toLowerCase());
         user.setNickname(userInfo.getNickname());
         user.setPassword(encryption.encode(userInfo.getPassword()));
@@ -57,15 +58,15 @@ public class UserService {
         user.setCreatedAt(new Date());
         userInfoRepository.save(user);
 
-        return new DefaultResponseDTO(responseMSG.SING_UP_SUCCESS);
+        return responseMSG.SING_UP_SUCCESS;
     }
 
-    public LoginTokenResponseDTO getUserToken(UserLogInRequestDTO loginInfo) {
-        String userEmail = loginInfo.getEmail().toLowerCase();
-        String userPW = loginInfo.getPassword();
+    public LoginTokenResponseDTO getUserToken(LoginDTO loginDTO) {
+        String userEmail = loginDTO.getEmail().toLowerCase();
+        String userPW = loginDTO.getPassword();
 
         if (!BCrypt.checkpw(userPW, encryption.encode(userPW)))
-            return new LoginTokenResponseDTO(responseMSG.NOT_CORRECT_PW);
+            throw new NotFoundException(responseMSG.NOT_CORRECT_PW);
 
         User user = findByEmail(userEmail);
         TokenResponseDTO responseDTO = jwtUtils.generateToken(userEmail);
@@ -73,8 +74,6 @@ public class UserService {
         String refreshToken = responseDTO.getRefreshToken();
 
         try {
-            //redisTemplate.setKeySerializer(new StringRedisSerializer());
-            //redisTemplate.setValueSerializer(new StringRedisSerializer());
             redisTemplate.opsForValue().set(refreshToken, userEmail);
             redisTemplate.expire(refreshToken, 7, TimeUnit.DAYS);
         } catch (RedisException e) {
@@ -82,6 +81,7 @@ public class UserService {
             //## 만약, redis에 refreshToken이 안들어가면 어떤 처리를 할 것인가? 다른 곳에 저장할 것인가?
             throw new UnauthorizedException("");
         }
+        log.info("redisTemplate start");
         user.setLoginAt(new Date());
         userInfoRepository.save(user);
         return new LoginTokenResponseDTO(accessToken, refreshToken);
@@ -130,8 +130,6 @@ public class UserService {
 
         log.info("checkSendEmail redis start");
         try {
-            //redisTemplate.setKeySerializer(new StringRedisSerializer());
-            //redisTemplate.setValueSerializer(new StringRedisSerializer());
             redisTemplate.opsForValue().set(email, Integer.toString(randomCode));
             redisTemplate.expire(email, 10, TimeUnit.MINUTES);
         } catch (Exception e) {

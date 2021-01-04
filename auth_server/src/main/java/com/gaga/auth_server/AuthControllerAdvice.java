@@ -2,6 +2,7 @@ package com.gaga.auth_server;
 
 import com.gaga.auth_server.dto.response.DefaultResponseDTO;
 import com.gaga.auth_server.exception.NoExistEmailException;
+import com.gaga.auth_server.exception.NotFoundException;
 import com.gaga.auth_server.exception.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,13 @@ public class AuthControllerAdvice {
     public ResponseEntity<DefaultResponseDTO> noExistEmailException(NoExistEmailException nee) {
         log.error(nee.getMessage(), nee);
         defaultResponseDTO.setMessage(nee.errorMessage);
+        return ResponseEntity.ok().body(defaultResponseDTO);
+    }
+
+    @ExceptionHandler(value = {NotFoundException.class})
+    public ResponseEntity<DefaultResponseDTO> notFoundException(NotFoundException nfe) {
+        log.error(nfe.getMessage(), nfe);
+        defaultResponseDTO.setMessage(nfe.getMessage());
         return ResponseEntity.ok().body(defaultResponseDTO);
     }
 

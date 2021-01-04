@@ -9,7 +9,8 @@ import javax.validation.constraints.Pattern;
 
 @Getter
 @Setter
-public class UserLogInRequestDTO {
+public class LoginDTO {
+    @NotBlank
     @Email(message = "이메일 형식에 맞지 않습니다.")
     private String email;
 

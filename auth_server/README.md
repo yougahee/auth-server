@@ -131,11 +131,13 @@ dependencies {
 </br>
 </br>
 
-# 개념
+# 찾아본 ..
 
 ## JWT(JSON Web Token)
 - header, payload, signature로 나누어진다.
 - token, refresh token
+
+## jasypt
 
 </br>
 
