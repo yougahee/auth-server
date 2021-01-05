@@ -1,4 +1,4 @@
-package com.gaga.auth_server.algorithm;
+package com.gaga.auth_server.utils;
 
 import lombok.Getter;
 import org.springframework.security.crypto.bcrypt.BCrypt;

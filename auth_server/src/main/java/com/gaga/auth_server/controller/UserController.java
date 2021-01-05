@@ -48,16 +48,16 @@ public class UserController {
     }
 
     @PostMapping("/check/nickname")
-    public ResponseEntity<Message> checkNickName(@Valid @RequestBody UserNicknameDTO userInfo) {
-        userService.checkNickname(userInfo.getNickname());
+    public ResponseEntity<Message> checkNickName(@Valid @RequestBody UserNicknameDTO nicknameDTO) {
+        userService.checkNickname(nicknameDTO.getEmail().toLowerCase(), nicknameDTO.getNickname());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new Message(responseMSG.CAN_USE_NICKNAME));
     }
 
     @PostMapping("/check/email")
-    public ResponseEntity<Message> sendEmail(@Valid @RequestBody UserEmailDTO emailInfo) {
-        userService.sendEmail(emailInfo.getEmail().toLowerCase());
+    public ResponseEntity<Message> sendEmail(@Valid @RequestBody UserEmailDTO userEmailDTO) {
+        userService.sendEmail(userEmailDTO.getEmail().toLowerCase());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new Message(responseMSG.SEND_EMAIL));
@@ -68,7 +68,7 @@ public class UserController {
         userService.checkEmailCode(emailDTO.getEmail().toLowerCase(), emailDTO.getCode());
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(responseMSG.CERTIFICATION));
+                .body(new Message(responseMSG.CERTIFICATE_EMAIL));
     }
 
     @GetMapping("/refresh")

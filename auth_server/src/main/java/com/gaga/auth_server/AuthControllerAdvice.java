@@ -22,7 +22,7 @@ public class AuthControllerAdvice {
             log.error("filedName : " + ((FieldError) error).getField());
             errorMessage.setMessage(error.getDefaultMessage());
         });
-        return ResponseEntity.badRequest().body(new Message(errorMessage));
+        return ResponseEntity.badRequest().body(errorMessage);
     }
 
     @ExceptionHandler(value = {UnauthorizedException.class})
@@ -55,8 +55,8 @@ public class AuthControllerAdvice {
         return ResponseEntity.badRequest().body(new Message(mse.getMessage()));
     }
 
-    @ExceptionHandler(value = {ExistNickNameException.class})
-    public ResponseEntity<Message> existNickNameException(ExistNickNameException ene) {
+    @ExceptionHandler(value = {AlreadyExistException.class})
+    public ResponseEntity<Message> existNickNameException(AlreadyExistException ene) {
         log.error(ene.getMessage(), ene);
         return ResponseEntity.badRequest().body(new Message(ene.getMessage()));
     }

@@ -1,16 +1,12 @@
 package com.gaga.auth_server.service;
 
-import com.gaga.auth_server.algorithm.Encryption;
-import com.gaga.auth_server.dto.response.DataResponseDTO;
 import com.gaga.auth_server.exception.NoNegativeNumberException;
 import com.gaga.auth_server.model.User;
 import com.gaga.auth_server.repository.UserInfoRepository;
 import com.gaga.auth_server.utils.ResponseMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Service;
-
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 

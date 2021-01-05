@@ -81,6 +81,7 @@ swagger 사용해보기
 | nickname | VARCHAR | 닉네임 |  |
 | grade | INT |  |  |
 | point | BIGINT |  |  |
+| nickname_check | TINYINT | 닉네임 중복체크 |  |
 | create_at | DATETIME | 생성날짜 |  |
 | login_at | DATETIME | 로그인한 시간 |  |
 | update_at | DATETIME | update한 시간 |  |
@@ -91,6 +92,16 @@ swagger 사용해보기
 | :----: | :------: | :----------------------: | :----: |
 | follower_idx | BIGINT | | FK |
 | following_idx | BIGINT | | FK |
+
+
+### user의 grade정보
+| Number | 설명 |
+| :----: | :----------------------: | 
+| 0 | 이메일 인증하기 전 |
+| 1 | 회원가입완료(일반회원) | 
+| 3 | 이메일 인증을 한 회원 |  
+| 99 | 관리자 |  
+| 100 | 탈퇴한 회원 |  
 
 </br>
 </br>

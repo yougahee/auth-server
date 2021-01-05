@@ -1,7 +1,6 @@
 package com.gaga.auth_server.controller;
 
 import com.gaga.auth_server.dto.Message;
-import com.gaga.auth_server.dto.response.DefaultResponseDTO;
 import com.gaga.auth_server.service.MyPageService;
 import com.gaga.auth_server.utils.ResponseMessage;
 import lombok.RequiredArgsConstructor;

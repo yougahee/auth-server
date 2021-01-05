@@ -1,6 +1,6 @@
 package com.gaga.auth_server.service;
 
-import com.gaga.auth_server.algorithm.Encryption;
+import com.gaga.auth_server.utils.*;
 import com.gaga.auth_server.dto.MailDTO;
 import com.gaga.auth_server.dto.request.UserInfoRequestDTO;
 import com.gaga.auth_server.dto.request.LoginDTO;
@@ -9,18 +9,15 @@ import com.gaga.auth_server.enums.TokenEnum;
 import com.gaga.auth_server.exception.*;
 import com.gaga.auth_server.model.User;
 import com.gaga.auth_server.repository.UserInfoRepository;
-import com.gaga.auth_server.utils.CustomMailSender;
-import com.gaga.auth_server.utils.JwtUtils;
-import com.gaga.auth_server.utils.ResponseMessage;
 import io.lettuce.core.RedisException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +32,7 @@ public class UserService {
     private final JwtUtils jwtUtils;
     private ResponseMessage responseMSG;
     private Encryption encryption;
+    private Grade grade;
 
     public final int RANDOM_MIN_NUMBER = 10000;
     public final int RANDOM_MAX_NUMBER = 99999;
@@ -43,17 +41,24 @@ public class UserService {
     protected void init() {
         encryption = new Encryption();
         responseMSG = new ResponseMessage();
+        grade = new Grade();
 
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
     }
 
+    @Transactional
     public void insertUser(UserInfoRequestDTO userInfo) {
         User user = findByEmailOrThrow(userInfo.getEmail().toLowerCase());
+        if(user.getGrade() == grade.SIGNUP_COMPLETE) throw new AlreadyExistException(responseMSG.ALREADY_OUR_MEMBER);
+        if(user.getGrade() != grade.EMAIL_CHECK_COMPLETE) throw new UnauthorizedException(responseMSG.VERIFY_EMAIL_FIRST);
+        if(!user.getCheckNickName()) throw new UnauthorizedException(responseMSG.CHECK_NICKNAME_FIRST);
+
         user.setNickname(userInfo.getNickname());
         user.setPassword(encryption.encode(userInfo.getPassword()));
         user.setSalt(encryption.getSalt());
         user.setCreatedAt(new Date());
+        user.setGrade(grade.SIGNUP_COMPLETE);
         userInfoRepository.save(user);
     }
 
@@ -61,12 +66,12 @@ public class UserService {
         String userEmail = loginDTO.getEmail().toLowerCase();
         String userPW = loginDTO.getPassword();
 
-        if (!BCrypt.checkpw(userPW, encryption.encode(userPW)))
+        User user = findByEmailOrThrow(userEmail);
+
+        if (!encryption.encode(userPW).equals(user.getPassword()))
             throw new NotFoundException(responseMSG.NOT_CORRECT_PW);
 
-        User user = findByEmailOrThrow(userEmail);
         TokenDTO responseDTO = jwtUtils.generateToken(userEmail);
-        String accessToken = responseDTO.getAccessToken();
         String refreshToken = responseDTO.getRefreshToken();
 
         try {
@@ -75,16 +80,14 @@ public class UserService {
         } catch (RedisException e) {
             //##try-catch문은 처리!
             //## 만약, redis에 refreshToken이 안들어가면 어떤 처리를 할 것인가? 다른 곳에 저장할 것인가?
-            throw new UnauthorizedException("");
+            throw new UnauthorizedException(responseMSG.INTERNAL_SERVER_ERROR);
         }
         log.info("redisTemplate end");
+
         user.setLoginAt(new Date());
         userInfoRepository.save(user);
 
-        return TokenDTO.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        return responseDTO;
     }
 
     public TokenDTO getReissueToken(String refreshToken) {
@@ -115,10 +118,12 @@ public class UserService {
     }
 
     public void sendEmail(String email) {
-        checkEmail(email);
+        if(userInfoRepository.existsByEmail(email))
+            throw new AlreadyExistException(responseMSG.ALREADY_USED_EMAIL);
 
         int randomCode = (int) Math.floor(Math.random() * RANDOM_MAX_NUMBER) + RANDOM_MIN_NUMBER;
         String message = responseMSG.SEND_EMAIL_CONTENT + randomCode + responseMSG.SEND_LAST_CONTENT;
+        log.info("randomCode : "+ randomCode);
 
         log.info("checkSendEmail redis start");
         try {
@@ -142,18 +147,18 @@ public class UserService {
         redisTemplate.delete(email);
         User user = User.builder()
                 .email(email)
+                .grade(grade.EMAIL_CHECK_COMPLETE)
                 .build();
         userInfoRepository.save(user);
     }
 
-    public void checkNickname(String nickname) {
+    public void checkNickname(String email, String nickname) {
         if (userInfoRepository.existsByNickname(nickname))
-            throw new ExistNickNameException(responseMSG.ALREADY_USED_NICKNAME);
-    }
+            throw new AlreadyExistException(responseMSG.ALREADY_USED_NICKNAME);
 
-    public void checkEmail(String email) {
-        if (userInfoRepository.existsByEmail(email))
-            throw new NoExistEmailException(responseMSG.ALREADY_USED_EMAIL);
+        User user = findByEmailOrThrow(email);
+        user.setCheckNickName(true);
+        userInfoRepository.save(user);
     }
 
     public User findByEmailOrThrow(String email) {
