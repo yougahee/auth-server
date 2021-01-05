@@ -5,11 +5,12 @@ import lombok.Getter;
 @Getter
 public class Message {
     private String message = "";
-    private Object data = new Object();
+    private Object data;
 
     private static final String DEFAULT_KEY = "result";
 
     public Message(String message) {
+        this.data = "";
         this.message = message;
     }
 

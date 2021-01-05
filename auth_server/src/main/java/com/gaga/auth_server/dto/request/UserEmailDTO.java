@@ -9,7 +9,7 @@ import javax.validation.constraints.Email;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UserEmailIdRequestDTO {
+public class UserEmailDTO {
     @Email(message = "이메일 형식에 맞지 않습니다.")
     private String email;
 }

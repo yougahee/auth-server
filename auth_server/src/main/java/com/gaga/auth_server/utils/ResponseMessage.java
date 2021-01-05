@@ -16,8 +16,8 @@ public class ResponseMessage {
     public String ALREADY_USED_EMAIL = "이미 사용중인 이메일입니다.";
 
     //signup
-    public String SING_UP_SUCCESS = "회원가입 성공";
-    public String SING_UP_FAIL = "회원가입 실패";
+    public String SIGN_UP_SUCCESS = "회원가입 성공";
+    public String SIGN_UP_FAIL = "회원가입 실패";
 
     //login
     public String LOG_IN_SUCCESS = "로그인 성공";

@@ -1,6 +1,8 @@
 package com.gaga.auth_server;
 
+import com.gaga.auth_server.dto.Message;
 import com.gaga.auth_server.dto.response.DefaultResponseDTO;
+import com.gaga.auth_server.exception.ExistNickNameException;
 import com.gaga.auth_server.exception.NoExistEmailException;
 import com.gaga.auth_server.exception.NotFoundException;
 import com.gaga.auth_server.exception.UnauthorizedException;
@@ -61,4 +63,11 @@ public class AuthControllerAdvice {
         defaultResponseDTO.setMessage(mse.getMessage());
         return ResponseEntity.ok().body(defaultResponseDTO);
     }
+
+    @ExceptionHandler(value = {ExistNickNameException.class})
+    public ResponseEntity<Message> existNickNameException(ExistNickNameException mse) {
+        log.error(mse.getMessage(), mse);
+        return ResponseEntity.ok().body(new Message(mse.getMessage()));
+    }
+
 }

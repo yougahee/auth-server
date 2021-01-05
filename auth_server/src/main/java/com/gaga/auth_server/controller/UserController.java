@@ -35,25 +35,34 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<Message> login(@RequestBody LoginDTO loginDTO) {
-        LoginTokenResponseDTO loginTokenResponseDTO = userService.getUserToken(loginDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(new Message(loginTokenResponseDTO));
+        TokenDTO tokenDTO = userService.getUserToken(loginDTO);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new Message(tokenDTO, responseMSG.LOG_IN_SUCCESS));
     }
 
     @PostMapping("/signup")
     public ResponseEntity<Message> signUp(@Valid @RequestBody UserInfoRequestDTO userInfo) {
-        return ResponseEntity.status(HttpStatus.OK).body(new Message(userService.insertUser(userInfo), responseMSG.SING_UP_SUCCESS));
+        userService.insertUser(userInfo);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new Message(responseMSG.SIGN_UP_SUCCESS));
     }
 
     @PostMapping("/check/nickname")
-    public ResponseEntity<DefaultResponseDTO> checkNickName(@Valid @RequestBody UserNicknameRequestDTO userInfo) {
-        defaultResponseDTO = userService.checkNickname(userInfo.getNickname());
-        return ResponseEntity.ok().body(defaultResponseDTO);
+    public ResponseEntity<Message> checkNickName(@Valid @RequestBody UserNicknameDTO userInfo) {
+        userService.checkNickname(userInfo.getNickname());
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new Message(responseMSG.CAN_USE_NICKNAME));
     }
 
     @PostMapping("/check/email")
-    public ResponseEntity<DefaultResponseDTO> sendEmail(@Valid @RequestBody UserEmailIdRequestDTO emailInfo) {
-        defaultResponseDTO = userService.sendEmail(emailInfo.getEmail().toLowerCase());
-        return ResponseEntity.ok().body(defaultResponseDTO);
+    public ResponseEntity<Message> sendEmail(@Valid @RequestBody UserEmailDTO emailInfo) {
+        userService.sendEmail(emailInfo.getEmail().toLowerCase());
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new Message(responseMSG.SEND_EMAIL));
     }
 
     @PostMapping("/check/email-code")
@@ -63,13 +72,13 @@ public class UserController {
     }
 
     @GetMapping("/refresh")
-    public ResponseEntity<TokenResponseDTO> reissueToken(@RequestHeader(value = "refresh_token") String refreshToken) {
-        TokenResponseDTO tokenResponseDTO = userService.getReissueToken(refreshToken);
+    public ResponseEntity<TokenDTO> reissueToken(@RequestHeader(value = "refresh_token") String refreshToken) {
+        TokenDTO tokenResponseDTO = userService.getReissueToken(refreshToken);
         return ResponseEntity.status(HttpStatus.OK).body(tokenResponseDTO);
     }
 
     @PostMapping("/find-pw")
-    public ResponseEntity<DefaultResponseDTO> findPassword(@Valid @RequestBody UserEmailIdRequestDTO emailInfo) {
+    public ResponseEntity<DefaultResponseDTO> findPassword(@Valid @RequestBody UserEmailDTO emailInfo) {
         defaultResponseDTO = userService.findPassword(emailInfo.getEmail().toLowerCase());
         return ResponseEntity.ok().body(defaultResponseDTO);
     }

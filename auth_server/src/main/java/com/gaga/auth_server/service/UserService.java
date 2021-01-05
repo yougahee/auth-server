@@ -6,6 +6,7 @@ import com.gaga.auth_server.dto.request.UserInfoRequestDTO;
 import com.gaga.auth_server.dto.request.LoginDTO;
 import com.gaga.auth_server.dto.response.*;
 import com.gaga.auth_server.enums.TokenEnum;
+import com.gaga.auth_server.exception.ExistNickNameException;
 import com.gaga.auth_server.exception.NoExistEmailException;
 import com.gaga.auth_server.exception.NotFoundException;
 import com.gaga.auth_server.exception.UnauthorizedException;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.mail.MailException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
@@ -50,26 +52,24 @@ public class UserService {
         redisTemplate.setValueSerializer(new StringRedisSerializer());
     }
 
-    public String insertUser(UserInfoRequestDTO userInfo) {
-        User user = findByEmail(userInfo.getEmail().toLowerCase());
+    public void insertUser(UserInfoRequestDTO userInfo) {
+        User user = findByEmailOrThrow(userInfo.getEmail().toLowerCase());
         user.setNickname(userInfo.getNickname());
         user.setPassword(encryption.encode(userInfo.getPassword()));
         user.setSalt(encryption.getSalt());
         user.setCreatedAt(new Date());
         userInfoRepository.save(user);
-
-        return responseMSG.SING_UP_SUCCESS;
     }
 
-    public LoginTokenResponseDTO getUserToken(LoginDTO loginDTO) {
+    public TokenDTO getUserToken(LoginDTO loginDTO) {
         String userEmail = loginDTO.getEmail().toLowerCase();
         String userPW = loginDTO.getPassword();
 
         if (!BCrypt.checkpw(userPW, encryption.encode(userPW)))
             throw new NotFoundException(responseMSG.NOT_CORRECT_PW);
 
-        User user = findByEmail(userEmail);
-        TokenResponseDTO responseDTO = jwtUtils.generateToken(userEmail);
+        User user = findByEmailOrThrow(userEmail);
+        TokenDTO responseDTO = jwtUtils.generateToken(userEmail);
         String accessToken = responseDTO.getAccessToken();
         String refreshToken = responseDTO.getRefreshToken();
 
@@ -81,31 +81,35 @@ public class UserService {
             //## 만약, redis에 refreshToken이 안들어가면 어떤 처리를 할 것인가? 다른 곳에 저장할 것인가?
             throw new UnauthorizedException("");
         }
-        log.info("redisTemplate start");
+        log.info("redisTemplate end");
         user.setLoginAt(new Date());
         userInfoRepository.save(user);
-        return new LoginTokenResponseDTO(accessToken, refreshToken);
+
+        return TokenDTO.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
-    public TokenResponseDTO getReissueToken(String refreshToken) {
-        TokenResponseDTO tokenResponseDTO = new TokenResponseDTO();
+    public TokenDTO getReissueToken(String refreshToken) {
+        TokenDTO tokenDTO = new TokenDTO();
         jwtUtils.isValidateToken(refreshToken, TokenEnum.REFRESH);
 
         Object object = redisTemplate.opsForValue().get(refreshToken);
         if (object != null) {
             String email = object.toString();
-            tokenResponseDTO = jwtUtils.generateToken(email);
+            tokenDTO = jwtUtils.generateToken(email);
 
             redisTemplate.delete(refreshToken);
-            redisTemplate.opsForValue().set(tokenResponseDTO.getRefreshToken(), email);
-            redisTemplate.expire(tokenResponseDTO.getRefreshToken(), 7, TimeUnit.DAYS);
+            redisTemplate.opsForValue().set(tokenDTO.getRefreshToken(), email);
+            redisTemplate.expire(tokenDTO.getRefreshToken(), 7, TimeUnit.DAYS);
         }
 
-        return tokenResponseDTO;
+        return tokenDTO;
     }
 
     public DefaultResponseDTO findPassword(String email) {
-        User user = findByEmail(email);
+        User user = findByEmailOrThrow(email);
         String tempPW = randomString();
         String encodeTempPW = encryption.encode(tempPW);
         user.setPassword(encodeTempPW);
@@ -116,15 +120,9 @@ public class UserService {
         return new DefaultResponseDTO(responseMSG.SEND_EMAIL);
     }
 
-    public DefaultResponseDTO checkNickname(String nickname) {
-        if (userInfoRepository.existsByNickname(nickname))
-            return new DefaultResponseDTO(400, false, responseMSG.ALREADY_USED_NICKNAME);
-        else
-            return new DefaultResponseDTO(responseMSG.CAN_USE_NICKNAME);
-    }
+    public void sendEmail(String email) {
+        checkEmail(email);
 
-    public DefaultResponseDTO sendEmail(String email) {
-        if (checkEmail(email)) throw new NoExistEmailException(responseMSG.ALREADY_USED_EMAIL);
         int randomCode = (int) Math.floor(Math.random() * RANDOM_MAX_NUMBER) + RANDOM_MIN_NUMBER;
         String message = responseMSG.SEND_EMAIL_CONTENT + randomCode + responseMSG.SEND_LAST_CONTENT;
 
@@ -133,13 +131,12 @@ public class UserService {
             redisTemplate.opsForValue().set(email, Integer.toString(randomCode));
             redisTemplate.expire(email, 10, TimeUnit.MINUTES);
         } catch (Exception e) {
+            //throw new MailException(responseMSG.SEND_FAIL_EMAIL);
             log.error(e.toString());
-            return new DefaultResponseDTO(responseMSG.SEND_FAIL_EMAIL);
         }
         log.info("checkSendEmail redis end");
 
         isSendMailSuccess(email, responseMSG.SEND_CERTIFICATION, message);
-        return new DefaultResponseDTO(responseMSG.SEND_EMAIL);
     }
 
     public DefaultResponseDTO checkEmailCode(String email, String code) {
@@ -158,11 +155,17 @@ public class UserService {
         return new DefaultResponseDTO(responseMSG.NOT_FOUND_CODE);
     }
 
-    public boolean checkEmail(String email) {
-        return userInfoRepository.existsByEmail(email);
+    public void checkNickname(String nickname) {
+        if (userInfoRepository.existsByNickname(nickname))
+            throw new ExistNickNameException(responseMSG.ALREADY_USED_NICKNAME);
     }
 
-    public User findByEmail(String email) {
+    public void checkEmail(String email) {
+        if (userInfoRepository.existsByEmail(email))
+            throw new NoExistEmailException(responseMSG.ALREADY_USED_EMAIL);
+    }
+
+    public User findByEmailOrThrow(String email) {
         return userInfoRepository.findByEmail(email)
                 .orElseThrow(() -> new NoExistEmailException(responseMSG.NOT_FOUND_EMAIL));
     }

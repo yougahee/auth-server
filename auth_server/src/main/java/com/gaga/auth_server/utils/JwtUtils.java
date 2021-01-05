@@ -1,9 +1,8 @@
 package com.gaga.auth_server.utils;
 
-import com.gaga.auth_server.dto.response.TokenResponseDTO;
+import com.gaga.auth_server.dto.response.TokenDTO;
 import com.gaga.auth_server.enums.TokenEnum;
 import com.gaga.auth_server.exception.UnauthorizedException;
-import com.gaga.auth_server.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -50,13 +49,13 @@ public class JwtUtils {
         if(claims.getBody().getExpiration().before(new Date())) throw new UnauthorizedException();
     }
 
-    public TokenResponseDTO generateToken(String email) {
+    public TokenDTO generateToken(String email) {
         Map<String, Object> claims = new HashMap<>();
         //claims.put("nickname", user.getNickname());
         return createToken(claims, email);
     }
 
-    public TokenResponseDTO createToken(Map<String, Object> claims, String sub) {
+    public TokenDTO createToken(Map<String, Object> claims, String sub) {
         Date now = new Date();
         String accessToken = Jwts.builder()
                 .setClaims(claims) // token에 담을 정보
@@ -74,6 +73,6 @@ public class JwtUtils {
                 .signWith(SignatureAlgorithm.HS256, REFRESH_SECRET_KEY)
                 .compact();
 
-        return new TokenResponseDTO(accessToken, refreshToken);
+        return new TokenDTO(accessToken, refreshToken);
     }
 }

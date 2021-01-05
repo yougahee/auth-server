@@ -2,7 +2,6 @@ package com.gaga.auth_server.service;
 
 import com.gaga.auth_server.dto.response.DataResponseDTO;
 import com.gaga.auth_server.dto.response.DefaultResponseDTO;
-import com.gaga.auth_server.exception.NoExistEmailException;
 import com.gaga.auth_server.model.User;
 import com.gaga.auth_server.repository.UserInfoRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +24,7 @@ public class MyPageService {
     @Transactional
     public DefaultResponseDTO updatePoint(String email, int coin) {
 
-        User user = userService.findByEmail(email);
+        User user = userService.findByEmailOrThrow(email);
         int totalPoint = user.getPoint() + coin;
 
         //coin 충전은 양수, coin 사용은 마이너스로
