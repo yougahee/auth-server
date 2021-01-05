@@ -1,8 +1,9 @@
 package com.gaga.auth_server.controller;
 
-import com.gaga.auth_server.dto.response.DataResponseDTO;
+import com.gaga.auth_server.dto.Message;
 import com.gaga.auth_server.dto.response.DefaultResponseDTO;
 import com.gaga.auth_server.service.MyPageService;
+import com.gaga.auth_server.utils.ResponseMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -14,25 +15,25 @@ import javax.annotation.PostConstruct;
 @RequestMapping("/mypage")
 @RequiredArgsConstructor
 @RestController
-public class MypageController {
+public class MyPageController {
     private final MyPageService myPageService;
-    private DefaultResponseDTO defaultResponseDTO;
+    private ResponseMessage responseMessage;
 
     @PostConstruct
     protected void init() {
-        defaultResponseDTO = new DefaultResponseDTO();
+        responseMessage = new ResponseMessage();
     }
 
     @GetMapping("")
-    public ResponseEntity<DataResponseDTO> getMyProfileInfo() {
-        DataResponseDTO dataResponseDTO = myPageService.getMyProfile();
-        return ResponseEntity.ok().body(dataResponseDTO);
+    public ResponseEntity<Message> getMyProfileInfo() {
+        myPageService.getMyProfile();
+        return ResponseEntity.ok().body(new Message(responseMessage.GET_MY_PAGE));
     }
 
     @GetMapping("/point/{coin}")
-    public ResponseEntity<DefaultResponseDTO> updatePoint(@RequestHeader String token, @PathVariable("coin") int coin) {
+    public ResponseEntity<Message> updatePoint(@RequestHeader String token, @PathVariable("coin") int coin) {
         //token유효성검사는 APIgateway에서 한다면, email이 와야함.
-        defaultResponseDTO = myPageService.updatePoint(token, coin);
-        return ResponseEntity.ok().body(defaultResponseDTO);
+        int point = myPageService.updatePoint(token, coin);
+        return ResponseEntity.ok().body(new Message(point, responseMessage.POINT_UPDATE_SUCCESS));
     }
 }

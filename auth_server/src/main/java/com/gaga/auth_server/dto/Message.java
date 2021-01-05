@@ -1,16 +1,19 @@
 package com.gaga.auth_server.dto;
 
 import lombok.Getter;
+import lombok.Setter;
 
+@Setter
 @Getter
 public class Message {
     private String message = "";
-    private Object data;
+    private Object data = "";
 
     private static final String DEFAULT_KEY = "result";
 
+    public Message() {}
+
     public Message(String message) {
-        this.data = "";
         this.message = message;
     }
 

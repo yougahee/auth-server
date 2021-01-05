@@ -4,12 +4,13 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public class ResponseMessage {
-    //이메일 전송
+    //메일 전송
     public String SEND_EMAIL = "이메일을 전송했습니다.";
     public String SEND_FAIL_EMAIL = "이메일을 전송에 실패했습니다.";
     public String SEND_EMAIL_CONTENT = "안녕하세요. morse앱에 오신 것을 환영합니다. \n" +
             "10분 안에 인증번호를 입력해주세요. \n 인증번호는 ";
     public String SEND_LAST_CONTENT = " 입니다.";
+    public String SEND_TEMP_PW_CODE = "임시 PASSWORD가 전송되었습니다.";
 
     //이메일
     public String NOT_FOUND_EMAIL = "존재하지 않은 이메일입니다.";
@@ -22,6 +23,10 @@ public class ResponseMessage {
     //login
     public String LOG_IN_SUCCESS = "로그인 성공";
     public String LOG_IN_FAIL = "로그인 실패";
+
+    //token
+    public String EXPIRED_TOKEN = "만료된 토큰입니다.";
+    public String REISSUE_REFRESH_TOKEN = "리프레시 토큰 재발급";
 
     //비밀번호
     public String TEMP_PW = "임시비밀번호";
@@ -38,4 +43,11 @@ public class ResponseMessage {
 
     //조회
     public String GET_ALL_USERS = "회원 조회 성공";
+
+    //마이페이지 조회
+    public String GET_MY_PAGE = "마이페이지 조회 성공";
+
+    //포인트
+    public String POINT_UPDATE_SUCCESS = "포인트 업데이트 성공";
+    public String POINT_UPDATE_FAIL = "포인트 업데이트 실패(잔액부족)";
 }

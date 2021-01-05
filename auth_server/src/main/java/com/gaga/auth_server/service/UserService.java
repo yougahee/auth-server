@@ -6,10 +6,7 @@ import com.gaga.auth_server.dto.request.UserInfoRequestDTO;
 import com.gaga.auth_server.dto.request.LoginDTO;
 import com.gaga.auth_server.dto.response.*;
 import com.gaga.auth_server.enums.TokenEnum;
-import com.gaga.auth_server.exception.ExistNickNameException;
-import com.gaga.auth_server.exception.NoExistEmailException;
-import com.gaga.auth_server.exception.NotFoundException;
-import com.gaga.auth_server.exception.UnauthorizedException;
+import com.gaga.auth_server.exception.*;
 import com.gaga.auth_server.model.User;
 import com.gaga.auth_server.repository.UserInfoRepository;
 import com.gaga.auth_server.utils.CustomMailSender;
@@ -20,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.mail.MailException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
@@ -92,23 +88,22 @@ public class UserService {
     }
 
     public TokenDTO getReissueToken(String refreshToken) {
-        TokenDTO tokenDTO = new TokenDTO();
         jwtUtils.isValidateToken(refreshToken, TokenEnum.REFRESH);
 
         Object object = redisTemplate.opsForValue().get(refreshToken);
-        if (object != null) {
-            String email = object.toString();
-            tokenDTO = jwtUtils.generateToken(email);
+        if (object == null) throw new UnauthorizedException(responseMSG.EXPIRED_TOKEN);
 
-            redisTemplate.delete(refreshToken);
-            redisTemplate.opsForValue().set(tokenDTO.getRefreshToken(), email);
-            redisTemplate.expire(tokenDTO.getRefreshToken(), 7, TimeUnit.DAYS);
-        }
+        String email = object.toString();
+        TokenDTO tokenDTO = jwtUtils.generateToken(email);
+
+        redisTemplate.delete(refreshToken);
+        redisTemplate.opsForValue().set(tokenDTO.getRefreshToken(), email);
+        redisTemplate.expire(tokenDTO.getRefreshToken(), 7, TimeUnit.DAYS);
 
         return tokenDTO;
     }
 
-    public DefaultResponseDTO findPassword(String email) {
+    public void findPassword(String email) {
         User user = findByEmailOrThrow(email);
         String tempPW = randomString();
         String encodeTempPW = encryption.encode(tempPW);
@@ -116,8 +111,7 @@ public class UserService {
         user.setSalt(encryption.getSalt());
         userInfoRepository.save(user);
 
-        isSendMailSuccess(user.getEmail(), responseMSG.TEMP_PW, tempPW);
-        return new DefaultResponseDTO(responseMSG.SEND_EMAIL);
+        sendMail(user.getEmail(), responseMSG.TEMP_PW, tempPW);
     }
 
     public void sendEmail(String email) {
@@ -136,23 +130,20 @@ public class UserService {
         }
         log.info("checkSendEmail redis end");
 
-        isSendMailSuccess(email, responseMSG.SEND_CERTIFICATION, message);
+        sendMail(email, responseMSG.SEND_CERTIFICATION, message);
     }
 
-    public DefaultResponseDTO checkEmailCode(String email, String code) {
-        email = email.toLowerCase();
+    public void checkEmailCode(String email, String code) {
         Object object = redisTemplate.opsForValue().get(email);
 
-        if (code.equals(object.toString())) {
-            redisTemplate.delete(email);
-            User user = new User();
-            user.setEmail(email);
-            userInfoRepository.save(user);
+        if (!code.equals(object.toString()))
+            throw new NotFoundException(responseMSG.NOT_FOUND_CODE);
 
-            return new DefaultResponseDTO(responseMSG.CERTIFICATION);
-        }
-
-        return new DefaultResponseDTO(responseMSG.NOT_FOUND_CODE);
+        redisTemplate.delete(email);
+        User user = User.builder()
+                .email(email)
+                .build();
+        userInfoRepository.save(user);
     }
 
     public void checkNickname(String nickname) {
@@ -170,7 +161,7 @@ public class UserService {
                 .orElseThrow(() -> new NoExistEmailException(responseMSG.NOT_FOUND_EMAIL));
     }
 
-    public void isSendMailSuccess(String sendEmail, String title, String sendMessage) {
+    public void sendMail(String sendEmail, String title, String sendMessage) {
         MailDTO mailDTO = new MailDTO(title, sendEmail, sendMessage);
         customMailSender.sendMail(mailDTO);
     }

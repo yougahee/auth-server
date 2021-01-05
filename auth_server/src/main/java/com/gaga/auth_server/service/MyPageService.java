@@ -1,13 +1,17 @@
 package com.gaga.auth_server.service;
 
+import com.gaga.auth_server.algorithm.Encryption;
 import com.gaga.auth_server.dto.response.DataResponseDTO;
-import com.gaga.auth_server.dto.response.DefaultResponseDTO;
+import com.gaga.auth_server.exception.NoNegativeNumberException;
 import com.gaga.auth_server.model.User;
 import com.gaga.auth_server.repository.UserInfoRepository;
+import com.gaga.auth_server.utils.ResponseMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
 @Slf4j
@@ -16,22 +20,30 @@ import javax.transaction.Transactional;
 public class MyPageService {
     private final UserService userService;
     private final UserInfoRepository userInfoRepository;
+    private ResponseMessage responseMsg;
 
-    public DataResponseDTO getMyProfile() {
-        return new DataResponseDTO("");
+    @PostConstruct
+    protected void init() {
+        responseMsg = new ResponseMessage();
+    }
+
+    //## mypage에서 어떤 것들이 필요한지 찾아보자
+    public User getMyProfile() {
+        User user = new User();
+
+        return user;
     }
 
     @Transactional
-    public DefaultResponseDTO updatePoint(String email, int coin) {
+    public int updatePoint(String email, int coin) {
 
         User user = userService.findByEmailOrThrow(email);
         int totalPoint = user.getPoint() + coin;
 
-        //coin 충전은 양수, coin 사용은 마이너스로
-        if(totalPoint < 0) return new DefaultResponseDTO();
+        if(totalPoint < 0) throw new NoNegativeNumberException(responseMsg.POINT_UPDATE_FAIL);
         user.setPoint(totalPoint);
         userInfoRepository.save(user);
 
-        return new DefaultResponseDTO("포인트 update");
+        return totalPoint;
     }
 }

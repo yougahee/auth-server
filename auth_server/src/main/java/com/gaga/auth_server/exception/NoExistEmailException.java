@@ -1,14 +1,17 @@
 package com.gaga.auth_server.exception;
 
-import lombok.Getter;
 
-@Getter
 public class NoExistEmailException extends RuntimeException {
-    public final String errorMessage = "존재하지 않은 회원입니다.";
+    static final long serialVersionUID = 1L;
 
-    public NoExistEmailException(String message, Throwable e) { super(message, e); }
+    public NoExistEmailException() { super(); }
+
+    public NoExistEmailException(Throwable e) { super(e); }
 
     public NoExistEmailException(String errorMessage) {
         super(errorMessage);
     }
+
+    public NoExistEmailException(String message, Throwable e) { super(message, e); }
+
 }

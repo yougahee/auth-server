@@ -19,12 +19,10 @@ import javax.validation.Valid;
 @RestController
 public class UserController {
     private final UserService userService;
-    private DefaultResponseDTO defaultResponseDTO;
     private ResponseMessage responseMSG;
 
     @PostConstruct
     protected void init() {
-        defaultResponseDTO = new DefaultResponseDTO();
         responseMSG = new ResponseMessage();
     }
 
@@ -66,20 +64,26 @@ public class UserController {
     }
 
     @PostMapping("/check/email-code")
-    public ResponseEntity<DefaultResponseDTO> checkEmailCode(@Valid @RequestBody EmailAuthorizationDTO userInfo) {
-        defaultResponseDTO = userService.checkEmailCode(userInfo.getEmail().toLowerCase(), userInfo.getCode());
-        return ResponseEntity.ok().body(defaultResponseDTO);
+    public ResponseEntity<Message> checkEmailCode(@Valid @RequestBody EmailAuthorizationDTO emailDTO) {
+        userService.checkEmailCode(emailDTO.getEmail().toLowerCase(), emailDTO.getCode());
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new Message(responseMSG.CERTIFICATION));
     }
 
     @GetMapping("/refresh")
-    public ResponseEntity<TokenDTO> reissueToken(@RequestHeader(value = "refresh_token") String refreshToken) {
-        TokenDTO tokenResponseDTO = userService.getReissueToken(refreshToken);
-        return ResponseEntity.status(HttpStatus.OK).body(tokenResponseDTO);
+    public ResponseEntity<Message> reissueToken(@RequestHeader(value = "refresh_token") String refreshToken) {
+        TokenDTO tokenDTO = userService.getReissueToken(refreshToken);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new Message(tokenDTO, responseMSG.REISSUE_REFRESH_TOKEN));
     }
 
     @PostMapping("/find-pw")
-    public ResponseEntity<DefaultResponseDTO> findPassword(@Valid @RequestBody UserEmailDTO emailInfo) {
-        defaultResponseDTO = userService.findPassword(emailInfo.getEmail().toLowerCase());
-        return ResponseEntity.ok().body(defaultResponseDTO);
+    public ResponseEntity<Message> findPassword(@Valid @RequestBody UserEmailDTO emailInfo) {
+        userService.findPassword(emailInfo.getEmail().toLowerCase());
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new Message(responseMSG.SEND_TEMP_PW_CODE));
     }
 }

@@ -1,11 +1,7 @@
 package com.gaga.auth_server;
 
 import com.gaga.auth_server.dto.Message;
-import com.gaga.auth_server.dto.response.DefaultResponseDTO;
-import com.gaga.auth_server.exception.ExistNickNameException;
-import com.gaga.auth_server.exception.NoExistEmailException;
-import com.gaga.auth_server.exception.NotFoundException;
-import com.gaga.auth_server.exception.UnauthorizedException;
+import com.gaga.auth_server.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
@@ -17,57 +13,57 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @Slf4j
 @ControllerAdvice
 public class AuthControllerAdvice {
-    private DefaultResponseDTO defaultResponseDTO = new DefaultResponseDTO();
+    Message errorMessage = new Message();
 
     @ExceptionHandler(value = {MethodArgumentNotValidException.class})
-    public ResponseEntity<Object> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ResponseEntity<Message> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.error(e.getMessage(), e);
         e.getBindingResult().getAllErrors().forEach((error) -> {
             log.error("filedName : " + ((FieldError) error).getField());
-            defaultResponseDTO.setMessage(error.getDefaultMessage());
+            errorMessage.setMessage(error.getDefaultMessage());
         });
-        return ResponseEntity.ok().body(defaultResponseDTO);
+        return ResponseEntity.badRequest().body(new Message(errorMessage));
     }
 
     @ExceptionHandler(value = {UnauthorizedException.class})
-    public ResponseEntity<DefaultResponseDTO> unauthorizedException(UnauthorizedException ue) {
+    public ResponseEntity<Message> unauthorizedException(UnauthorizedException ue) {
         log.error(ue.getMessage(), ue);
-        defaultResponseDTO.setMessage(ue.getErrorMessage());
-        return ResponseEntity.ok().body(defaultResponseDTO);
+        return ResponseEntity.badRequest().body(new Message(ue.getMessage()));
     }
 
     @ExceptionHandler(value = {NoExistEmailException.class})
-    public ResponseEntity<DefaultResponseDTO> noExistEmailException(NoExistEmailException nee) {
+    public ResponseEntity<Message> noExistEmailException(NoExistEmailException nee) {
         log.error(nee.getMessage(), nee);
-        defaultResponseDTO.setMessage(nee.errorMessage);
-        return ResponseEntity.ok().body(defaultResponseDTO);
+        return ResponseEntity.badRequest().body(new Message(nee.getMessage()));
     }
 
     @ExceptionHandler(value = {NotFoundException.class})
-    public ResponseEntity<DefaultResponseDTO> notFoundException(NotFoundException nfe) {
+    public ResponseEntity<Message> notFoundException(NotFoundException nfe) {
         log.error(nfe.getMessage(), nfe);
-        defaultResponseDTO.setMessage(nfe.getMessage());
-        return ResponseEntity.ok().body(defaultResponseDTO);
+        return ResponseEntity.badRequest().body(new Message(nfe.getMessage()));
     }
 
     @ExceptionHandler(value = {NullPointerException.class})
-    public ResponseEntity<DefaultResponseDTO> nullPointerException(NullPointerException ne) {
+    public ResponseEntity<Message> nullPointerException(NullPointerException ne) {
         log.error(ne.getMessage(), ne);
-        defaultResponseDTO.setMessage(ne.getMessage());
-        return ResponseEntity.ok().body(defaultResponseDTO);
+        return ResponseEntity.badRequest().body(new Message(ne.getMessage()));
     }
 
     @ExceptionHandler(value = {MailException.class})
-    public ResponseEntity<DefaultResponseDTO> mailSendException(MailException mse) {
+    public ResponseEntity<Message> mailSendException(MailException mse) {
         log.error(mse.getMessage(), mse);
-        defaultResponseDTO.setMessage(mse.getMessage());
-        return ResponseEntity.ok().body(defaultResponseDTO);
+        return ResponseEntity.badRequest().body(new Message(mse.getMessage()));
     }
 
     @ExceptionHandler(value = {ExistNickNameException.class})
-    public ResponseEntity<Message> existNickNameException(ExistNickNameException mse) {
-        log.error(mse.getMessage(), mse);
-        return ResponseEntity.ok().body(new Message(mse.getMessage()));
+    public ResponseEntity<Message> existNickNameException(ExistNickNameException ene) {
+        log.error(ene.getMessage(), ene);
+        return ResponseEntity.badRequest().body(new Message(ene.getMessage()));
     }
 
+    @ExceptionHandler(value = {NoNegativeNumberException.class})
+    public ResponseEntity<Message> noNegativeNumberException(NoNegativeNumberException nne) {
+        log.error(nne.getMessage(), nne);
+        return ResponseEntity.badRequest().body(new Message(nne.getMessage()));
+    }
 }
