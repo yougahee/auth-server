@@ -20,7 +20,7 @@ public class CustomErrorController implements ErrorController {
         return ERROR_PATH;
     }
 
-    @RequestMapping(ERROR_PATH)
+    /*@RequestMapping(ERROR_PATH)
     public Map<String, String> handleError(HttpServletRequest request, HttpServletResponse response) {
         Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
         HttpStatus httpStatus = HttpStatus.valueOf(Integer.valueOf(status.toString()));
@@ -28,5 +28,5 @@ public class CustomErrorController implements ErrorController {
         errorMsg.put("Error Code", status.toString());
         errorMsg.put("Error Message", httpStatus.getReasonPhrase());
         return errorMsg;
-    }
+    }*/
 }

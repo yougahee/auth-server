@@ -1,10 +1,12 @@
 package com.gaga.apigateway.filter;
 
+import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ErrorFilter extends SimpleFilter {
+public class ErrorFilter extends ZuulFilter {
 
     @Override
     public String filterType() {

@@ -81,6 +81,7 @@ public class UserController {
 
     @PostMapping("/find-pw")
     public ResponseEntity<Message> findPassword(@Valid @RequestBody UserEmailDTO emailInfo) {
+        //## token 보내면 email 보낼 필요 없음
         userService.findPassword(emailInfo.getEmail().toLowerCase());
         return ResponseEntity
                 .status(HttpStatus.OK)

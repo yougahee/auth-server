@@ -25,8 +25,8 @@ public class MyPageService {
 
     //## mypage에서 어떤 것들이 필요한지 찾아보자
     public User getMyProfile() {
+        log.info("my profile get");
         User user = new User();
-
         return user;
     }
 

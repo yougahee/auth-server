@@ -8,6 +8,7 @@ import com.gaga.auth_server.utils.JwtUtils;
 import com.gaga.auth_server.utils.ResponseMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,7 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<Message> getAllUsers(@RequestHeader(value = "token") String token) {
+    public ResponseEntity<Message> getAllUsers(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String token) {
         jwtUtils.isValidateToken(token, TokenEnum.ACCESS);
 
         List<SimpleUserDTO> users = adminService.getAllUsers();

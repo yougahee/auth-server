@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.util.Date;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -140,7 +141,7 @@ public class UserService {
     public void checkEmailCode(String email, String code) {
         Object object = redisTemplate.opsForValue().get(email);
 
-        if (!code.equals(object.toString()))
+        if (object == null || !code.equals(object.toString()))
             throw new NotFoundException(responseMSG.NOT_FOUND_CODE);
 
         redisTemplate.delete(email);
