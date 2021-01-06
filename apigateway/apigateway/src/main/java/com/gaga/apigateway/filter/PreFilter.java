@@ -40,7 +40,7 @@ public class PreFilter extends ZuulFilter {
         log.info("pre filter");
         RequestContext ctx = RequestContext.getCurrentContext();
         HttpServletRequest request = ctx.getRequest();
-        String authorizationHeader = request.getHeader("authorization");
+        String authorizationHeader = request.getHeader("token");
         if(authorizationHeader == null) return null;
 
         log.info(String.format("%s request to %s", request.getMethod(), request.getRequestURL().toString()));

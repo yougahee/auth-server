@@ -16,15 +16,15 @@ import javax.transaction.Transactional;
 public class MyPageService {
     private final UserService userService;
     private final UserInfoRepository userInfoRepository;
-    private ResponseMessage responseMsg;
+    private ResponseMessage ResponseMessage;
 
     @PostConstruct
     protected void init() {
-        responseMsg = new ResponseMessage();
+        ResponseMessage = new ResponseMessage();
     }
 
     //## mypage에서 어떤 것들이 필요한지 찾아보자
-    public User getMyProfile() {
+    public User getMyProfile(String email) {
         log.info("my profile get");
         User user = new User();
         return user;
@@ -32,11 +32,10 @@ public class MyPageService {
 
     @Transactional
     public int updatePoint(String email, int coin) {
-
         User user = userService.findByEmailOrThrow(email);
         int totalPoint = user.getPoint() + coin;
 
-        if(totalPoint < 0) throw new NoNegativeNumberException(responseMsg.POINT_UPDATE_FAIL);
+        if(totalPoint < 0) throw new NoNegativeNumberException(ResponseMessage.POINT_UPDATE_FAIL);
         user.setPoint(totalPoint);
         userInfoRepository.save(user);
 

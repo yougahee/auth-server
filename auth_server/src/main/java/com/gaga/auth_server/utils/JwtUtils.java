@@ -1,7 +1,11 @@
 package com.gaga.auth_server.utils;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.gaga.auth_server.dto.response.TokenDTO;
 import com.gaga.auth_server.enums.TokenEnum;
+import com.gaga.auth_server.exception.NotFoundException;
 import com.gaga.auth_server.exception.UnauthorizedException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -74,5 +78,15 @@ public class JwtUtils {
                 .compact();
 
         return new TokenDTO(accessToken, refreshToken);
+    }
+
+    public String decodeJWT(String token) {
+        if(token == null || token.equals("")) throw new NotFoundException("token이 없습니다.");
+
+        log.info(ACCESS_SECRET_KEY);
+        JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(ACCESS_SECRET_KEY)).build();
+        //jwtVerifier.verify(token);
+
+        return JWT.decode(token).getSubject();
     }
 }
