@@ -24,7 +24,8 @@ public class MyPageController {
     }
 
     @GetMapping("")
-    public ResponseEntity<Message> getMyProfileInfo() {
+    public ResponseEntity<Message> getMyProfileInfo(@RequestHeader String token) {
+        //##토큰으로 확인을 해야함
         myPageService.getMyProfile();
         return ResponseEntity.ok().body(new Message(responseMessage.GET_MY_PAGE));
     }

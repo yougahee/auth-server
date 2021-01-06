@@ -13,6 +13,10 @@ public class Encryption {
         return BCrypt.hashpw(rawPassword, salt);
     }
 
+    public String encodeWithSalt(String rawPassword, String salt) {
+        return BCrypt.hashpw(rawPassword, salt);
+    }
+
     public static void main(String[] args) {
         /*String pw = "gagaga";
         System.out.println("암호화된 PW : " + encode(pw));

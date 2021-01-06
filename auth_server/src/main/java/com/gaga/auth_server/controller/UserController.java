@@ -49,7 +49,7 @@ public class UserController {
 
     @PostMapping("/check/nickname")
     public ResponseEntity<Message> checkNickName(@Valid @RequestBody UserNicknameDTO nicknameDTO) {
-        userService.checkNickname(nicknameDTO.getEmail().toLowerCase(), nicknameDTO.getNickname());
+        userService.checkNickname(nicknameDTO.getNickname());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new Message(responseMSG.CAN_USE_NICKNAME));

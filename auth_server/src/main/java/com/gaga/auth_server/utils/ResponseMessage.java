@@ -29,7 +29,7 @@ public class ResponseMessage {
 
     //token
     public String EXPIRED_TOKEN = "만료된 토큰입니다.";
-    public String REISSUE_REFRESH_TOKEN = "리프레시 토큰 재발급";
+    public String REISSUE_REFRESH_TOKEN = "토큰 재발급";
 
     //비밀번호
     public String TEMP_PW = "임시비밀번호";

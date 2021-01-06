@@ -36,9 +36,6 @@ public class User {
     @Column(name = "point", columnDefinition = "int default 0")
     private int point;
 
-    @Column(name = "nickname_check", columnDefinition = "boolean default false")
-    private Boolean checkNickName;
-
     @Column(name = "created_at")
     private Date createdAt;
 

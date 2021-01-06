@@ -49,26 +49,26 @@ public class UserService {
 
     @Transactional
     public void insertUser(UserInfoRequestDTO userInfo) {
+        log.info("insertUser start");
         User user = findByEmailOrThrow(userInfo.getEmail().toLowerCase());
         if(user.getGrade() == grade.SIGNUP_COMPLETE) throw new AlreadyExistException(responseMSG.ALREADY_OUR_MEMBER);
         if(user.getGrade() != grade.EMAIL_CHECK_COMPLETE) throw new UnauthorizedException(responseMSG.VERIFY_EMAIL_FIRST);
-        if(!user.getCheckNickName()) throw new UnauthorizedException(responseMSG.CHECK_NICKNAME_FIRST);
 
         user.setNickname(userInfo.getNickname());
         user.setPassword(encryption.encode(userInfo.getPassword()));
         user.setSalt(encryption.getSalt());
         user.setCreatedAt(new Date());
+        user.setUpdateAt(new Date());
         user.setGrade(grade.SIGNUP_COMPLETE);
         userInfoRepository.save(user);
+        log.info("insertUser end");
     }
 
     public TokenDTO getUserToken(LoginDTO loginDTO) {
         String userEmail = loginDTO.getEmail().toLowerCase();
-        String userPW = loginDTO.getPassword();
 
         User user = findByEmailOrThrow(userEmail);
-
-        if (!encryption.encode(userPW).equals(user.getPassword()))
+        if (!encryption.encodeWithSalt(loginDTO.getPassword(), user.getSalt()).equals(user.getPassword()))
             throw new NotFoundException(responseMSG.NOT_CORRECT_PW);
 
         TokenDTO responseDTO = jwtUtils.generateToken(userEmail);
@@ -86,7 +86,6 @@ public class UserService {
 
         user.setLoginAt(new Date());
         userInfoRepository.save(user);
-
         return responseDTO;
     }
 
@@ -152,13 +151,9 @@ public class UserService {
         userInfoRepository.save(user);
     }
 
-    public void checkNickname(String email, String nickname) {
+    public void checkNickname(String nickname) {
         if (userInfoRepository.existsByNickname(nickname))
             throw new AlreadyExistException(responseMSG.ALREADY_USED_NICKNAME);
-
-        User user = findByEmailOrThrow(email);
-        user.setCheckNickName(true);
-        userInfoRepository.save(user);
     }
 
     public User findByEmailOrThrow(String email) {
