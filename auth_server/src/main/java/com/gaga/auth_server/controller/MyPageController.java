@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Enumeration;
 
 @Slf4j
 @CrossOrigin("*")
@@ -26,16 +28,16 @@ public class MyPageController {
     protected void init() { ResponseMessage = new ResponseMessage(); }
 
     @GetMapping("")
-    public ResponseEntity<Message> getMyProfileInfo(@RequestHeader(value = "token") String token) {
-        User user = myPageService.getMyProfile(jwtUtils.decodeJWT(token));
+    public ResponseEntity<Message> getMyProfileInfo(@RequestHeader(value = "x-forward-email") String email) {
+        User user = myPageService.getMyProfile(email);
         return ResponseEntity.status(HttpStatus.OK).body(new Message(ResponseMessage.GET_MY_PAGE));
     }
 
     @GetMapping("/point/{coin}")
     public ResponseEntity<Message> updatePoint(@RequestHeader(value = "token") String token,
+                                               @RequestHeader(value = "x-forward-email") String email,
                                                @PathVariable("coin") int coin) {
-        log.info(jwtUtils.decodeJWT(token));
-        int point = myPageService.updatePoint(jwtUtils.decodeJWT(token), coin);
+        int point = myPageService.updatePoint(email, coin);
         return ResponseEntity.ok().body(new Message(point, ResponseMessage.POINT_UPDATE_SUCCESS));
     }
 }

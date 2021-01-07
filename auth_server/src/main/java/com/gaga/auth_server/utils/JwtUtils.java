@@ -82,11 +82,6 @@ public class JwtUtils {
 
     public String decodeJWT(String token) {
         if(token == null || token.equals("")) throw new NotFoundException("token이 없습니다.");
-
-        log.info(ACCESS_SECRET_KEY);
-        JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(ACCESS_SECRET_KEY)).build();
-        //jwtVerifier.verify(token);
-
         return JWT.decode(token).getSubject();
     }
 }
