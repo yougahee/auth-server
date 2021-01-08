@@ -1,6 +1,9 @@
 package com.gaga.auth_server.service;
 
+import com.gaga.auth_server.dto.response.MyPageDTO;
+import com.gaga.auth_server.exception.NoExistEmailException;
 import com.gaga.auth_server.exception.NoNegativeNumberException;
+import com.gaga.auth_server.exception.NotFoundException;
 import com.gaga.auth_server.model.User;
 import com.gaga.auth_server.repository.UserInfoRepository;
 import com.gaga.auth_server.utils.ResponseMessage;
@@ -23,17 +26,20 @@ public class MyPageService {
         ResponseMessage = new ResponseMessage();
     }
 
-    //## mypage에서 어떤 것들이 필요한지 찾아보자
-    public User getMyProfile(String email) {
+    public MyPageDTO getMyProfile(String email) {
         log.info("my profile get");
-        User user = new User();
-        return user;
+        User user = userInfoRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException(ResponseMessage.NOT_FOUND_EMAIL));
+        return MyPageDTO.builder()
+                .nickname(user.getNickname())
+                .point(user.getPoint())
+                .build();
     }
 
     @Transactional
-    public int updatePoint(String email, int coin) {
+    public long updatePoint(String email, int coin) {
         User user = userService.findByEmailOrThrow(email);
-        int totalPoint = user.getPoint() + coin;
+        long totalPoint = user.getPoint() + coin;
 
         if(totalPoint < 0) throw new NoNegativeNumberException(ResponseMessage.POINT_UPDATE_FAIL);
         user.setPoint(totalPoint);

@@ -21,7 +21,7 @@ public class User {
     @Column(name = "email")
     private String email;
 
-    @Column(length = 100, name = "password")
+    @Column(length = 100, name = "pwd")
     private String password;
 
     @Column(length = 100, name = "salt")
@@ -30,18 +30,18 @@ public class User {
     @Column(length = 10, name = "nickname")
     private String nickname;
 
-    @Column(name = "grade", columnDefinition = "int default 0")
-    private int grade;
+    @Column(name = "grade", columnDefinition = "byte default 0")
+    private Byte grade;
 
-    @Column(name = "point", columnDefinition = "int default 0")
-    private int point;
+    @Column(name = "point", columnDefinition = "long default 5000")
+    private Long point;
 
-    @Column(name = "created_at")
+    @Column(name = "created_dt")
     private Date createdAt;
 
-    @Column(name = "login_at")
+    @Column(name = "login_dt")
     private Date loginAt;
 
-    @Column(name = "update_at")
+    @Column(name = "update_dt")
     private Date updateAt;
 }

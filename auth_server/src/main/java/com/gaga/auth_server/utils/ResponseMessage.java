@@ -4,6 +4,9 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public class ResponseMessage {
+    //test
+    public String TEST_DELETE_EMAIL_RECORD = "[test] email 삭제 성공";
+
     //메일 전송
     public String SEND_EMAIL = "이메일을 전송했습니다.";
     public String SEND_FAIL_EMAIL = "이메일을 전송에 실패했습니다.";

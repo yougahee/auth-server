@@ -4,10 +4,10 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public class Grade {
-    public int BASIC_GRADE = 0;
-    public int SIGNUP_COMPLETE = 1;
-    public int EMAIL_CHECK_COMPLETE = 3;
+    public byte BASIC_GRADE = 0;
+    public byte SIGNUP_COMPLETE = 1;
+    public byte EMAIL_CHECK_COMPLETE = 3;
 
-    public int MANAGER = 99;
-    public int LEAVE_SERVICE = 100;
+    public byte MANAGER = 5;
+    public byte LEAVE_SERVICE = 9;
 }

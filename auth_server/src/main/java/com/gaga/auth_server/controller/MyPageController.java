@@ -21,23 +21,22 @@ import java.util.Enumeration;
 @RestController
 public class MyPageController {
     private final MyPageService myPageService;
-    private final JwtUtils jwtUtils;
     private ResponseMessage ResponseMessage;
 
     @PostConstruct
     protected void init() { ResponseMessage = new ResponseMessage(); }
 
     @GetMapping("")
-    public ResponseEntity<Message> getMyProfileInfo(@RequestHeader(value = "x-forward-email") String email) {
-        User user = myPageService.getMyProfile(email);
-        return ResponseEntity.status(HttpStatus.OK).body(new Message(ResponseMessage.GET_MY_PAGE));
+    public ResponseEntity<Message> getMyProfileInfo(@RequestHeader(value = "token") String token,
+            @RequestHeader(value = "x-forward-email") String email) {
+        return ResponseEntity.status(HttpStatus.OK).body(new Message(myPageService.getMyProfile(new JwtUtils().decodeJWT(token)), ResponseMessage.GET_MY_PAGE));
     }
 
     @GetMapping("/point/{coin}")
     public ResponseEntity<Message> updatePoint(@RequestHeader(value = "token") String token,
                                                @RequestHeader(value = "x-forward-email") String email,
                                                @PathVariable("coin") int coin) {
-        int point = myPageService.updatePoint(email, coin);
+        long point = myPageService.updatePoint(email, coin);
         return ResponseEntity.ok().body(new Message(point, ResponseMessage.POINT_UPDATE_SUCCESS));
     }
 }

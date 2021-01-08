@@ -19,11 +19,11 @@ import javax.validation.Valid;
 @RestController
 public class UserController {
     private final UserService userService;
-    private ResponseMessage responseMSG;
+    private ResponseMessage ResponseMSG;
 
     @PostConstruct
     protected void init() {
-        responseMSG = new ResponseMessage();
+        ResponseMSG = new ResponseMessage();
     }
 
     @GetMapping("/")
@@ -31,12 +31,18 @@ public class UserController {
         return "SEVER IS RUNNING";
     }
 
+    @GetMapping("/test/remove/{email}")
+    public ResponseEntity<Message> testDeleteEmail(@PathVariable("email") String email) {
+        userService.removeEmailRecord(email);
+        return ResponseEntity.ok().body(new Message(ResponseMSG.TEST_DELETE_EMAIL_RECORD));
+    }
+
     @PostMapping("/login")
     public ResponseEntity<Message> login(@RequestBody LoginDTO loginDTO) {
         TokenDTO tokenDTO = userService.getUserToken(loginDTO);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(tokenDTO, responseMSG.LOG_IN_SUCCESS));
+                .body(new Message(tokenDTO, ResponseMSG.LOG_IN_SUCCESS));
     }
 
     @PostMapping("/signup")
@@ -44,7 +50,7 @@ public class UserController {
         userService.insertUser(userInfo);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(responseMSG.SIGN_UP_SUCCESS));
+                .body(new Message(ResponseMSG.SIGN_UP_SUCCESS));
     }
 
     @PostMapping("/check/nickname")
@@ -52,7 +58,7 @@ public class UserController {
         userService.checkNickname(nicknameDTO.getNickname());
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(responseMSG.CAN_USE_NICKNAME));
+                .body(new Message(ResponseMSG.CAN_USE_NICKNAME));
     }
 
     @PostMapping("/check/email")
@@ -60,7 +66,7 @@ public class UserController {
         userService.sendEmail(userEmailDTO.getEmail().toLowerCase());
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(responseMSG.SEND_EMAIL));
+                .body(new Message(ResponseMSG.SEND_EMAIL));
     }
 
     @PostMapping("/check/email-code")
@@ -68,7 +74,7 @@ public class UserController {
         userService.checkEmailCode(emailDTO.getEmail().toLowerCase(), emailDTO.getCode());
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(responseMSG.CERTIFICATE_EMAIL));
+                .body(new Message(ResponseMSG.CERTIFICATE_EMAIL));
     }
 
     @GetMapping("/refresh")
@@ -76,7 +82,7 @@ public class UserController {
         TokenDTO tokenDTO = userService.getReissueToken(refreshToken);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(tokenDTO, responseMSG.REISSUE_REFRESH_TOKEN));
+                .body(new Message(tokenDTO, ResponseMSG.REISSUE_REFRESH_TOKEN));
     }
 
     @PostMapping("/find-pw")
@@ -85,6 +91,6 @@ public class UserController {
         userService.findPassword(emailInfo.getEmail().toLowerCase());
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(responseMSG.SEND_TEMP_PW_CODE));
+                .body(new Message(ResponseMSG.SEND_TEMP_PW_CODE));
     }
 }

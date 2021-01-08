@@ -48,6 +48,12 @@ public class UserService {
         redisTemplate.setValueSerializer(new StringRedisSerializer());
     }
 
+    //test용 - 클라요청
+    public void removeEmailRecord(String email) {
+        User user = findByEmailOrThrow(email);
+        userInfoRepository.delete(user);
+    }
+
     @Transactional
     public void insertUser(UserInfoRequestDTO userInfo) {
         log.info("insertUser start");
