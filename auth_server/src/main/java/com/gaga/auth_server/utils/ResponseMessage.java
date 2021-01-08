@@ -37,6 +37,7 @@ public class ResponseMessage {
     //비밀번호
     public String TEMP_PW = "임시비밀번호";
     public String NOT_CORRECT_PW = "비밀번호가 일치하지 않습니다.";
+    public String CHANGE_PW_SUCCESS = "비밀번호 변경을 완료했습니다.";
 
     //닉네임
     public String ALREADY_USED_NICKNAME = "이미 사용중인 닉네임입니다.";

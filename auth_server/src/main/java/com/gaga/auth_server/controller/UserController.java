@@ -93,4 +93,13 @@ public class UserController {
                 .status(HttpStatus.OK)
                 .body(new Message(ResponseMSG.SEND_TEMP_PW_CODE));
     }
+
+    @PostMapping("/change/pw")
+    public ResponseEntity<Message> changePassword(@RequestHeader(value = "x-forward-email") String email,
+                                                  @Valid @RequestBody UserPasswordDTO passwordDTO) {
+        userService.changePassword(email, passwordDTO.getPassword());
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new Message(ResponseMSG.CHANGE_PW_SUCCESS));
+    }
 }

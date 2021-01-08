@@ -115,12 +115,21 @@ public class UserService {
     public void findPassword(String email) {
         User user = findByEmailOrThrow(email);
         String tempPW = randomString();
-        String encodeTempPW = encryption.encode(tempPW);
-        user.setPassword(encodeTempPW);
+
+        insertPassword(user, tempPW);
+        sendMail(user.getEmail(), responseMSG.TEMP_PW, tempPW);
+    }
+
+    public void changePassword(String email, String pw) {
+        User user = findByEmailOrThrow(email);
+        insertPassword(user, pw);
+    }
+
+    @Transactional
+    public void insertPassword(User user, String pw) {
+        user.setPassword(encryption.encode(pw));
         user.setSalt(encryption.getSalt());
         userInfoRepository.save(user);
-
-        sendMail(user.getEmail(), responseMSG.TEMP_PW, tempPW);
     }
 
     public void sendEmail(String email) {
