@@ -60,4 +60,7 @@ public class ResponseMessage {
     public String POINT_UPDATE_FAIL = "포인트 업데이트 실패(잔액부족)";
 
     public String INTERNAL_SERVER_ERROR = "서버 내부 에러입니다.";
+
+    //탈퇴
+    public String WITHDRAW_MORSE_SUCCESS = "탈퇴처리 완료되었습니다.";
 }

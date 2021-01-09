@@ -84,4 +84,8 @@ public class JwtUtils {
         if(token == null || token.equals("")) throw new NotFoundException("token이 없습니다.");
         return JWT.decode(token).getSubject();
     }
+
+    public static void main(String[] args) {
+        System.out.println(JWT.decode("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhaHJmdXMzNEBnbWFpbC5jb20iLCJleHAiOjE2MTAxMjAzMzIsImlhdCI6MTYxMDExNjczMn0.eswD_DvXp6ySkf3XnpPPKiUHuuZEeAA5z-IW-td5FvY").getSubject());
+    }
 }

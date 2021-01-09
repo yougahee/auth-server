@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.util.Date;
-import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +32,7 @@ public class UserService {
     private final JwtUtils jwtUtils;
     private ResponseMessage responseMSG;
     private Encryption encryption;
-    private Grade grade;
+    private UserGrade grade;
 
     public final int RANDOM_MIN_NUMBER = 10000;
     public final int RANDOM_MAX_NUMBER = 99999;
@@ -42,17 +41,14 @@ public class UserService {
     protected void init() {
         encryption = new Encryption();
         responseMSG = new ResponseMessage();
-        grade = new Grade();
+        grade = new UserGrade();
 
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
     }
 
     //test용 - 클라요청
-    public void removeEmailRecord(String email) {
-        User user = findByEmailOrThrow(email);
-        userInfoRepository.delete(user);
-    }
+    public void removeEmailRecord(String email) { userInfoRepository.deleteByEmail(email); }
 
     @Transactional
     public void insertUser(UserInfoRequestDTO userInfo) {
@@ -125,10 +121,9 @@ public class UserService {
         insertPassword(user, pw);
     }
 
-    @Transactional
-    public void insertPassword(User user, String pw) {
-        user.setPassword(encryption.encode(pw));
-        user.setSalt(encryption.getSalt());
+    public void leaveUser(String email) {
+        User user = findByEmailOrThrow(email);
+        user.setGrade((byte) 9);
         userInfoRepository.save(user);
     }
 
@@ -164,6 +159,13 @@ public class UserService {
                 .email(email)
                 .grade(grade.EMAIL_CHECK_COMPLETE)
                 .build();
+        userInfoRepository.save(user);
+    }
+
+    @Transactional
+    public void insertPassword(User user, String pw) {
+        user.setPassword(encryption.encode(pw));
+        user.setSalt(encryption.getSalt());
         userInfoRepository.save(user);
     }
 
