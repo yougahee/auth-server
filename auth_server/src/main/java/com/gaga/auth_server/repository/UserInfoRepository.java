@@ -15,5 +15,4 @@ public interface UserInfoRepository extends JpaRepository<User, Long> {
 
      Boolean existsByNickname(String nickname);
 
-     void deleteByEmail(String email);
 }

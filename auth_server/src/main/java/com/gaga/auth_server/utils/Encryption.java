@@ -2,9 +2,11 @@ package com.gaga.auth_server.utils;
 
 import lombok.Getter;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.stereotype.Component;
 
 
 @Getter
+@Component
 public class Encryption {
     private String salt;
 

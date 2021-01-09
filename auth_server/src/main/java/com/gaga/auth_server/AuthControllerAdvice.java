@@ -3,6 +3,7 @@ package com.gaga.auth_server;
 import com.gaga.auth_server.dto.Message;
 import com.gaga.auth_server.exception.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
 import org.springframework.validation.FieldError;
@@ -65,5 +66,11 @@ public class AuthControllerAdvice {
     public ResponseEntity<Message> noNegativeNumberException(NoNegativeNumberException nne) {
         log.error(nne.getMessage(), nne);
         return ResponseEntity.badRequest().body(new Message(nne.getMessage()));
+    }
+
+    @ExceptionHandler(value = {RedisConnectionFailureException.class})
+    public ResponseEntity<Message> redisConnectionFailureException(RedisConnectionFailureException rcfe) {
+        log.error(rcfe.getMessage(), rcfe);
+        return ResponseEntity.ok().body(new Message("서버내부오류입니다."));
     }
 }

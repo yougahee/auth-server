@@ -30,8 +30,9 @@ public class UserService {
     private final StringRedisTemplate redisTemplate;
     private final CustomMailSender customMailSender;
     private final JwtUtils jwtUtils;
+    private final RandomCode randomCode;
+    private final Encryption encryption;
     private ResponseMessage responseMSG;
-    private Encryption encryption;
     private UserGrade grade;
 
     public final int RANDOM_MIN_NUMBER = 10000;
@@ -39,7 +40,6 @@ public class UserService {
 
     @PostConstruct
     protected void init() {
-        encryption = new Encryption();
         responseMSG = new ResponseMessage();
         grade = new UserGrade();
 
@@ -48,20 +48,54 @@ public class UserService {
     }
 
     //test용 - 클라요청
-    public void removeEmailRecord(String email) { userInfoRepository.deleteByEmail(email); }
+    public void removeEmailRecord(String email) {
+        User user = findByEmailOrThrow(email);
+        userInfoRepository.delete(user);
+    }
+
+    //int -> void로 바꿔야함. -> 테스트를 위해
+    public int sendEmail(String email) {
+        if (userInfoRepository.existsByEmail(email))
+            throw new AlreadyExistException(responseMSG.ALREADY_USED_EMAIL);
+
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(email))) redisTemplate.delete(email);
+
+        int randomCode = (int) Math.floor(Math.random() * RANDOM_MAX_NUMBER) + RANDOM_MIN_NUMBER;
+        String message = responseMSG.SEND_EMAIL_CONTENT + randomCode + responseMSG.SEND_LAST_CONTENT;
+        log.info("randomCode : " + randomCode);
+
+        log.info("checkSendEmail redis start");
+        redisTemplate.opsForValue().set(email, Integer.toString(randomCode));
+        redisTemplate.expire(email, 10, TimeUnit.MINUTES);
+        sendMail(email, responseMSG.SEND_CERTIFICATION, message);
+        return randomCode;
+    }
+
+    public void checkEmailCode(String email, String code) {
+        Object object = redisTemplate.opsForValue().get(email);
+
+        if (object == null || !code.equals(object.toString()))
+            throw new NotFoundException(responseMSG.NOT_FOUND_CODE);
+
+        redisTemplate.delete(email);
+        User user = User.builder()
+                .email(email)
+                .grade(grade.EMAIL_CHECK_COMPLETE)
+                .point((long) 50000)
+                .build();
+        userInfoRepository.save(user);
+    }
 
     @Transactional
     public void insertUser(UserInfoRequestDTO userInfo) {
         log.info("insertUser start");
         User user = findByEmailOrThrow(userInfo.getEmail().toLowerCase());
-        if(user.getGrade() == grade.SIGNUP_COMPLETE) throw new AlreadyExistException(responseMSG.ALREADY_OUR_MEMBER);
-        if(user.getGrade() != grade.EMAIL_CHECK_COMPLETE) throw new UnauthorizedException(responseMSG.VERIFY_EMAIL_FIRST);
-
+        if (user.getGrade() == grade.SIGNUP_COMPLETE) throw new AlreadyExistException(responseMSG.ALREADY_OUR_MEMBER);
+        if (user.getGrade() != grade.EMAIL_CHECK_COMPLETE)
+            throw new UnauthorizedException(responseMSG.VERIFY_EMAIL_FIRST);
         user.setNickname(userInfo.getNickname());
         user.setPassword(encryption.encode(userInfo.getPassword()));
         user.setSalt(encryption.getSalt());
-        user.setCreatedAt(new Date());
-        user.setUpdateAt(new Date());
         user.setGrade(grade.SIGNUP_COMPLETE);
         userInfoRepository.save(user);
         log.info("insertUser end");
@@ -77,17 +111,11 @@ public class UserService {
         TokenDTO responseDTO = jwtUtils.generateToken(userEmail);
         String refreshToken = responseDTO.getRefreshToken();
 
-        try {
-            redisTemplate.opsForValue().set(refreshToken, userEmail);
-            redisTemplate.expire(refreshToken, 7, TimeUnit.DAYS);
-        } catch (RedisException e) {
-            //##try-catch문은 처리!
-            //## 만약, redis에 refreshToken이 안들어가면 어떤 처리를 할 것인가? 다른 곳에 저장할 것인가?
-            throw new UnauthorizedException(responseMSG.INTERNAL_SERVER_ERROR);
-        }
+        redisTemplate.opsForValue().set(refreshToken, userEmail);
+        redisTemplate.expire(refreshToken, 7, TimeUnit.DAYS);
         log.info("redisTemplate end");
 
-        user.setLoginAt(new Date());
+        user.setLoginDate(new Date());
         userInfoRepository.save(user);
         return responseDTO;
     }
@@ -95,10 +123,10 @@ public class UserService {
     public TokenDTO getReissueToken(String refreshToken) {
         jwtUtils.isValidateToken(refreshToken, TokenEnum.REFRESH);
 
-        Object object = redisTemplate.opsForValue().get(refreshToken);
-        if (object == null) throw new UnauthorizedException(responseMSG.EXPIRED_TOKEN);
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(refreshToken)))
+            throw new UnauthorizedException(responseMSG.EXPIRED_TOKEN);
 
-        String email = object.toString();
+        String email = jwtUtils.decodeJWT(refreshToken);
         TokenDTO tokenDTO = jwtUtils.generateToken(email);
 
         redisTemplate.delete(refreshToken);
@@ -110,10 +138,10 @@ public class UserService {
 
     public void findPassword(String email) {
         User user = findByEmailOrThrow(email);
-        String tempPW = randomString();
+        String tempPW = randomCode.randomString();
 
-        insertPassword(user, tempPW);
         sendMail(user.getEmail(), responseMSG.TEMP_PW, tempPW);
+        insertPassword(user, tempPW);
     }
 
     public void changePassword(String email, String pw) {
@@ -124,41 +152,6 @@ public class UserService {
     public void leaveUser(String email) {
         User user = findByEmailOrThrow(email);
         user.setGrade((byte) 9);
-        userInfoRepository.save(user);
-    }
-
-    public void sendEmail(String email) {
-        if(userInfoRepository.existsByEmail(email))
-            throw new AlreadyExistException(responseMSG.ALREADY_USED_EMAIL);
-
-        int randomCode = (int) Math.floor(Math.random() * RANDOM_MAX_NUMBER) + RANDOM_MIN_NUMBER;
-        String message = responseMSG.SEND_EMAIL_CONTENT + randomCode + responseMSG.SEND_LAST_CONTENT;
-        log.info("randomCode : "+ randomCode);
-
-        log.info("checkSendEmail redis start");
-        try {
-            redisTemplate.opsForValue().set(email, Integer.toString(randomCode));
-            redisTemplate.expire(email, 10, TimeUnit.MINUTES);
-        } catch (Exception e) {
-            //throw new MailException(responseMSG.SEND_FAIL_EMAIL);
-            log.error(e.toString());
-        }
-        log.info("checkSendEmail redis end");
-
-        sendMail(email, responseMSG.SEND_CERTIFICATION, message);
-    }
-
-    public void checkEmailCode(String email, String code) {
-        Object object = redisTemplate.opsForValue().get(email);
-
-        if (object == null || !code.equals(object.toString()))
-            throw new NotFoundException(responseMSG.NOT_FOUND_CODE);
-
-        redisTemplate.delete(email);
-        User user = User.builder()
-                .email(email)
-                .grade(grade.EMAIL_CHECK_COMPLETE)
-                .build();
         userInfoRepository.save(user);
     }
 
@@ -182,25 +175,5 @@ public class UserService {
     public void sendMail(String sendEmail, String title, String sendMessage) {
         MailDTO mailDTO = new MailDTO(title, sendEmail, sendMessage);
         customMailSender.sendMail(mailDTO);
-    }
-
-    public String randomString() {
-        StringBuilder sb = new StringBuilder();
-        Random rnd = new Random();
-
-        for (int i = 0; i < 8; i++) {
-            switch (i % 3) {
-                case 0:
-                    sb.append((char) ((rnd.nextInt(26)) + 97));
-                    break;
-                case 1:
-                    sb.append((char) ((rnd.nextInt(26)) + 65));
-                    break;
-                case 2:
-                    sb.append((rnd.nextInt(10)));
-                    break;
-            }
-        }
-        return sb.toString();
     }
 }

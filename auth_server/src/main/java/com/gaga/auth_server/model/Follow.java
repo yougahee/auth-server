@@ -2,6 +2,7 @@ package com.gaga.auth_server.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 
@@ -9,7 +10,7 @@ import javax.persistence.*;
 @Setter
 @Entity
 @Table(name = "follow")
-public class Follow {
+public class Follow extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "follow_idx")
@@ -20,8 +21,4 @@ public class Follow {
 
     @Column(name = "user_streamer_idx")
     private Long userStreamerIdx;
-
-    @Column(name = "created_dt")
-    private java.sql.Timestamp createdDt;
-
 }

@@ -1,6 +1,7 @@
 package com.gaga.auth_server.model;
 
 import lombok.*;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -12,7 +13,7 @@ import java.util.Date;
 @Entity
 @Builder
 @Table(name = "user")
-public class User {
+public class User extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_idx")
@@ -30,18 +31,12 @@ public class User {
     @Column(length = 10, name = "nickname")
     private String nickname;
 
-    @Column(name = "grade", columnDefinition = "byte default 0")
+    @Column(name = "grade", columnDefinition = "TINYINT(4) default 0")
     private Byte grade;
 
-    @Column(name = "point", columnDefinition = "long default 5000")
+    @Column(name = "point", columnDefinition = "BIGINT(20) default '50000'")
     private Long point;
 
-    @Column(name = "created_dt")
-    private Date createdAt;
-
     @Column(name = "login_dt")
-    private Date loginAt;
-
-    @Column(name = "update_dt")
-    private Date updateAt;
+    private Date loginDate;
 }

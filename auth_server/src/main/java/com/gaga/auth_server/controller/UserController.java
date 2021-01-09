@@ -63,10 +63,10 @@ public class UserController {
 
     @PostMapping("/check/email")
     public ResponseEntity<Message> sendEmail(@Valid @RequestBody UserEmailDTO userEmailDTO) {
-        userService.sendEmail(userEmailDTO.getEmail().toLowerCase());
+        int code = userService.sendEmail(userEmailDTO.getEmail().toLowerCase());
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(responseMessage.SEND_EMAIL));
+                .body(new Message("빠른테스트를 위해 : " + code , responseMessage.SEND_EMAIL));
     }
 
     @PostMapping("/check/email-code")
