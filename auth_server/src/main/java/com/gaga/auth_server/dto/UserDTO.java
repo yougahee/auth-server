@@ -13,8 +13,6 @@ import java.util.Date;
 public class UserDTO {
     private long userIdx;
     private String email;
-    private String password;
-    private String salt;
     private String nickname;
     private Byte grade;
     private Long point;
@@ -26,14 +24,10 @@ public class UserDTO {
         UserDTO userDTO = new UserDTO();
         userDTO.setUserIdx(entity.getUserIdx());
         userDTO.setEmail(entity.getEmail());
-        userDTO.setPassword(entity.getPassword());
-        userDTO.setSalt(entity.getSalt());
         userDTO.setNickname(entity.getNickname());
         userDTO.setGrade(entity.getGrade());
         userDTO.setPoint(entity.getPoint());
-        //userDTO.setCreateDate(entity.getCreateDate());
         userDTO.setLoginDate(entity.getLoginDate());
-        //userDTO.setUpdateDate(entity.getUpdateDate());
 
         return userDTO;
     }
