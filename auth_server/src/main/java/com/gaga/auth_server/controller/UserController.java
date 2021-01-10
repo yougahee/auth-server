@@ -103,7 +103,16 @@ public class UserController {
                 .body(new Message(responseMessage.CHANGE_PW_SUCCESS));
     }
 
-    @GetMapping
+    @PostMapping("/change/nickname")
+    public ResponseEntity<Message> changeNickName(@Valid @RequestHeader(value = "x-forward-email") String email,
+                                                  @RequestBody UserNicknameDTO nicknameDTO) {
+        userService.changeNickname(email, nicknameDTO.getNickname());
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new Message(responseMessage.CHANGE_NICKNAME_SUCCESS));
+    }
+
+    @GetMapping("/withdraw")
     public ResponseEntity<Message> leaveUser(@RequestHeader(value = "x-forward-email") String email) {
         userService.leaveUser(email);
         return ResponseEntity

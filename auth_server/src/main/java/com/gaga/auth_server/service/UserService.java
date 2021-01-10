@@ -151,7 +151,7 @@ public class UserService {
 
     public void leaveUser(String email) {
         User user = findByEmailOrThrow(email);
-        user.setGrade((byte) 9);
+        user.setGrade(grade.LEAVE_SERVICE);
         userInfoRepository.save(user);
     }
 
@@ -175,5 +175,12 @@ public class UserService {
     public void sendMail(String sendEmail, String title, String sendMessage) {
         MailDTO mailDTO = new MailDTO(title, sendEmail, sendMessage);
         customMailSender.sendMail(mailDTO);
+    }
+
+    public void changeNickname(String email, String nickname) {
+        checkNickname(nickname);
+        User user = findByEmailOrThrow(email);
+        user.setNickname(nickname);
+        userInfoRepository.save(user);
     }
 }

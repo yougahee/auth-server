@@ -43,6 +43,7 @@ public class ResponseMessage {
     public String ALREADY_USED_NICKNAME = "이미 사용중인 닉네임입니다.";
     public String CAN_USE_NICKNAME = "사용가능한 닉네임입니다.";
     public String CHECK_NICKNAME_FIRST = "닉네임 중복체크를 해주세요.";
+    public String CHANGE_NICKNAME_SUCCESS = "닉네임이 정상적으로 변경되었습니다.";
 
     //인증번호
     public String SEND_CERTIFICATION = "인증번호전송";
@@ -60,6 +61,9 @@ public class ResponseMessage {
     public String POINT_UPDATE_FAIL = "포인트 업데이트 실패(잔액부족)";
 
     public String INTERNAL_SERVER_ERROR = "서버 내부 에러입니다.";
+
+    //권한
+    public String NO_AUTHORIZATION = "권한이 없습니다.";
 
     //탈퇴
     public String WITHDRAW_MORSE_SUCCESS = "탈퇴처리 완료되었습니다.";

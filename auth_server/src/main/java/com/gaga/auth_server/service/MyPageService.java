@@ -1,7 +1,6 @@
 package com.gaga.auth_server.service;
 
 import com.gaga.auth_server.dto.response.MyPageDTO;
-import com.gaga.auth_server.exception.NoExistEmailException;
 import com.gaga.auth_server.exception.NoNegativeNumberException;
 import com.gaga.auth_server.exception.NotFoundException;
 import com.gaga.auth_server.model.User;
