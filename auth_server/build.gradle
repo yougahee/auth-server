@@ -1,0 +1,59 @@
+plugins {
+	id 'org.springframework.boot' version '2.4.1'
+	id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+	id 'java'
+}
+
+group = 'com.gaga'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-devtools'
+
+	//db
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'mysql:mysql-connector-java'
+
+	//redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	//lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	implementation 'org.springframework.boot:spring-boot-starter-test'
+
+	//encryption
+	implementation 'org.springframework.security:spring-security-crypto:5.1.5.RELEASE'
+
+	//valid
+	implementation 'org.springframework.boot:spring-boot-starter-validation:2.3.3.RELEASE'
+
+	//jwt
+	implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.7.0'
+	implementation 'com.auth0:java-jwt:3.4.0'
+
+	//email
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	//compile "com.sun.mail:javax.mail"
+	//implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+	// Swagger 2
+	compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+	compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+}
+
+test {
+	useJUnitPlatform()
+}
