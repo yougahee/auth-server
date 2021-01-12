@@ -117,6 +117,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'mysql:mysql-connector-java'
 
+	//redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 	//lombok
 	compileOnly 'org.projectlombok:lombok'
@@ -131,10 +133,16 @@ dependencies {
 
 	//jwt
 	implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.7.0'
-
+	implementation 'com.auth0:java-jwt:3.4.0'
 
 	//email
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	//compile "com.sun.mail:javax.mail"
+	//implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+	// Swagger 2
+	compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+	compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
 }
 ```
 
