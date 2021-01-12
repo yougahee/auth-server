@@ -85,10 +85,9 @@ public class UserController {
                 .body(new Message(tokenDTO, responseMessage.REISSUE_REFRESH_TOKEN));
     }
 
-    @PostMapping("/find-pw")
-    public ResponseEntity<Message> findPassword(@Valid @RequestBody UserEmailDTO emailInfo) {
-        //## token 보내면 email 보낼 필요 없음
-        userService.findPassword(emailInfo.getEmail().toLowerCase());
+    @GetMapping("/find-pw")
+    public ResponseEntity<Message> findPassword(@RequestHeader(value = "x-forward-email") String email) {
+        userService.findPassword(email);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(new Message(responseMessage.SEND_TEMP_PW_CODE));
