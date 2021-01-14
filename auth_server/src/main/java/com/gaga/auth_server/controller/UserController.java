@@ -34,7 +34,7 @@ public class UserController {
     @GetMapping("/test/remove/{email}")
     public ResponseEntity<Message> testDeleteEmail(@PathVariable("email") String email) {
         userService.removeEmailRecord(email);
-        return ResponseEntity.ok().body(new Message(responseMessage.TEST_DELETE_EMAIL_RECORD));
+        return ResponseEntity.ok(new Message());
     }
 
     @PostMapping("/login")
@@ -42,7 +42,9 @@ public class UserController {
         TokenDTO tokenDTO = userService.getUserToken(loginDTO);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(tokenDTO, responseMessage.LOG_IN_SUCCESS));
+                .header("AccessToken", tokenDTO.getAccessToken())
+                .header("RefreshToken", tokenDTO.getRefreshToken())
+                .body(new Message(responseMessage.LOG_IN_SUCCESS));
     }
 
     @PostMapping("/signup")
@@ -78,11 +80,13 @@ public class UserController {
     }
 
     @GetMapping("/refresh")
-    public ResponseEntity<Message> reissueToken(@RequestHeader(value = "refresh_token") String refreshToken) {
+    public ResponseEntity<Message> reissueToken(@RequestHeader(value = "RefreshToken") String refreshToken) {
         TokenDTO tokenDTO = userService.getReissueToken(refreshToken);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(tokenDTO, responseMessage.REISSUE_REFRESH_TOKEN));
+                .header("AccessToken", tokenDTO.getAccessToken())
+                .header("RefreshToken", tokenDTO.getRefreshToken())
+                .body(new Message(responseMessage.REISSUE_REFRESH_TOKEN));
     }
 
     @GetMapping("/find-pw")

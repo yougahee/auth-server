@@ -67,6 +67,7 @@ public class UserService {
         log.info("checkSendEmail redis start");
         redisTemplate.opsForValue().set(email, Integer.toString(randomCode));
         redisTemplate.expire(email, 10, TimeUnit.MINUTES);
+        log.info("checkSendEmail redis end");
         sendMail(email, responseMSG.SEND_CERTIFICATION, message);
         return randomCode;
     }

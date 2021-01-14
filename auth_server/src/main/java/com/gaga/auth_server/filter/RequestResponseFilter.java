@@ -29,7 +29,10 @@ public class RequestResponseFilter implements Filter {
         long end = System.currentTimeMillis();
 
         log.info("\n" +
-                        "[REQUEST] {} - {} {} - {}\n" +
+                        "[REQUEST] {}\n " +
+                        "url : {}\n" +
+                        "ResponseStatus : {}\n" +
+                        "ResponseTime : {}\n" +
                         "Headers : {}\n" +
                         "Request : {}\n" +
                         "Response : {}\n",
@@ -50,7 +53,30 @@ public class RequestResponseFilter implements Filter {
             String headerName = headerArray.nextElement();
             headerMap.put(headerName, request.getHeader(headerName));
         }
+
+        if(request.getHeaders("X-Forwarded-For") == null) {
+            headerMap.put("Client ip ", getClientIP(request));
+        } else {
+            headerMap.put("Client ip ", request.getHeaders("X-Forwarded-For").toString());
+        }
+
         return headerMap;
+    }
+
+    private String getClientIP(HttpServletRequest request) {
+        String ip = request.getHeader("Proxy-Client-IP");
+
+        if(ip == null)
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        if(ip == null)
+            ip = request.getHeader("HTTP_CLIENT_IP");
+        if(ip == null)
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+        if(ip == null)
+            ip = request.getRemoteAddr();
+
+        log.info(" >> ip >> " + ip);
+        return ip;
     }
 
     private String getRequestBody(ContentCachingRequestWrapper request) {
