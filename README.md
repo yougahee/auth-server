@@ -71,7 +71,10 @@
 8. token을 발급하여 클라이언트에 보내줄 때는 Response Header? Response Body? Cookie? 어느 곳으로 보내주는 것이 맞을까?
 	- 결론적으로는 Header나 Cookie에 포함시켜서 보내는 것이 일반적이다.
 	- 처음엔 Response Body에 보내줘도 괜찮지 않을까? 생각했다.
-	-
+	- 이유
+		- token 이라는 아이의 특성 상 header에 좀 더 어울리다.
+		- XSS 해킹 위험 감소
+		- CSRF 
 
 9. Log 관리 
 

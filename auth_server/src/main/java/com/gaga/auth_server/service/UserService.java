@@ -1,5 +1,6 @@
 package com.gaga.auth_server.service;
 
+import com.gaga.auth_server.enums.RoleType;
 import com.gaga.auth_server.utils.*;
 import com.gaga.auth_server.dto.MailDTO;
 import com.gaga.auth_server.dto.request.UserInfoRequestDTO;
@@ -9,7 +10,6 @@ import com.gaga.auth_server.enums.TokenEnum;
 import com.gaga.auth_server.exception.*;
 import com.gaga.auth_server.model.User;
 import com.gaga.auth_server.repository.UserInfoRepository;
-import io.lettuce.core.RedisException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.util.Date;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -91,13 +90,13 @@ public class UserService {
     public void insertUser(UserInfoRequestDTO userInfo) {
         log.info("insertUser start");
         User user = findByEmailOrThrow(userInfo.getEmail().toLowerCase());
-        if (user.getGrade() == grade.SIGNUP_COMPLETE) throw new AlreadyExistException(responseMSG.ALREADY_OUR_MEMBER);
+        if (user.getGrade() == grade.MEMBER) throw new AlreadyExistException(responseMSG.ALREADY_OUR_MEMBER);
         if (user.getGrade() != grade.EMAIL_CHECK_COMPLETE)
             throw new UnauthorizedException(responseMSG.VERIFY_EMAIL_FIRST);
         user.setNickname(userInfo.getNickname());
         user.setPassword(encryption.encode(userInfo.getPassword()));
         user.setSalt(encryption.getSalt());
-        user.setGrade(grade.SIGNUP_COMPLETE);
+        user.setGrade(grade.MEMBER);
         userInfoRepository.save(user);
         log.info("insertUser end");
     }
