@@ -1,4 +1,4 @@
-# Authorization Server
+# :closed_lock_with_key: Authorization Server
 
 ## Server
 - Spring Boot
@@ -8,30 +8,51 @@
 </br>
 </br>
 
-# 구현요소
-1. 이메일 인증 메일 전송 API
-    - 이메일형식이 맞는지? validation check
-    - 이메일 중복 체크
-    - 위 사항을 모두 충족한다면, 이메일로 인증코드를 보내줌
-    
-2. 이메일 인증코드와 사용자가 보낸 인증코드가 맞는지 확인해주는 API
+# :key: 구현요소(FLOW)
+[ 회원가입 ]
 
-3. 닉네임 중복확인 API
-    - DB에서 해당하는 닉네임 존재여부를 판별
+1. 이메일을 입력하고 인증번호 받기 버튼을 누른다.
+    1. 해당 이메일이 서비스에 존재한다면 이메일이 중복되었다는 응답메세지가 간다.
+2. 인증번호 받기 버튼을 누르면 해당 이메일로 인증번호가 전송된다. (전송받은 인증코드를 10분안에 입력해야 한다.)
+    1. 인증번호가 잘 입력되었다면, 다음단계로 넘어간다.
+    2. 인증번호가 틀렸다면 넘어가지 않는다.
+    3. 인증번호전송을 여러 번 했다면, 맨 마지막으로 온 메일(최신 메일)의 인증번호로 입력해야한다.
+3. 닉네임과 패스워드를 입력하여 회원가입을 할 수 있다.
+    1. 닉네임은 중복되지 않아야하며 중복확인 버튼으로 체크한다.
+    2. 패스워드는 8~20자 사이의 문자로 영어, 숫자, 특수문자 조합으로 이루어져있다.
+4. 정상적으로 회원가입이 된다.
 
-4. 회원가입 API
+[로그인]
 
-5. 로그인 API
+1. 이메일 아이디, 비밀번호 입력 후 로그인 버튼을 누른다.
+    1. 회원이라면 로그인이 되고 메인화면으로 넘어간다.
+    2. 회원이 아니라면 로그인이 되지 않는다.
+    3. 로그인시 AccessToken과 RefreshToken을 응답으로 넘겨준다.
 
-6. Mypage API
+[비밀번호 찾기]
 
-7. 포인트 update API
+1. 임시비밀번호 발급
+
+[마이페이지]
+
+1. 마이페이지에 들어오면 닉네임, 포인트, 내가 팔로우한 사람들의 목록이 뜬다.
+2. 포인트를 충전할 수 있다.
+    1. 스트리밍 중에 포인트를 사용할 수 있다. 
+
+[그외]
+
+1. Refresh Token 발급
+2. 비밀번호 찾기
+3. 비밀번호 변경
+4. 닉네임 수정
+5. 회원탈퇴
+6. 회원정보 수정하기
 
 
 </br>
 </br>
 
-# 개발을 하면서 고민했던 것들
+# :key: 개발을 하면서 고민했던 것들
 1. 서버는 클라이언트가 요청을 보내면 응답을 적절히 배출하는 서비스를 하는 일종의 서비스직이라고 생각한다. 
 그렇기 때문에, 어떤 요청에 대해 상황마다 다른 메세지와 적절한 응답값을 
 낼 수 있어야 한다고 생각했다. 회원가입을 하다가 에러가 난 경우라면 이메일 중복확인을 하지 않아서 라던가 등등 
@@ -68,22 +89,27 @@
         - 한 장비에서 1초에 5번 정도만 비교할 수 있도록 한다. (원래는 약 50억번정도 가능하다고 한다. 무분별한 해킹의 위험을 막기 위해서)
         - 
 
-8. token을 발급하여 클라이언트에 보내줄 때는 Response Header? Response Body? Cookie? 어느 곳으로 보내주는 것이 맞을까?
-	- 결론적으로는 Header나 Cookie에 포함시켜서 보내는 것이 일반적이다.
+8. token은 Header? Body? Cookie? 어느 곳으로 보내주는 것이 맞을까?
+	- Header나 Cookie에 포함시켜서 보내는 것이 일반적이라고 한다. 
 	- 처음엔 Response Body에 보내줘도 괜찮지 않을까? 생각했다.
-	- 이유
-		- token 이라는 아이의 특성 상 header에 좀 더 어울리다.
-		- XSS 해킹 위험 감소
+
+9. token을 response header에 담아서 보내는 이유  
+	- jwt라는 데이터의 특성상 body에 담기는 data랑 구분하는 것이 좋을 것이라고 판단했다.
+		- 해당 페이지도 header에 보내는 것을 추천 하고 있다.  
+			- [링크](https://stackoverflow.com/questions/47709451/pass-jwt-refresh-token-on-header-or-body )  
+		- CSRF, XSS 해킹 위험 감소
 		- CSRF 
 
-9. Log 관리 
 
-10. 
+
+10. Log 관리 
+
+
 </br>
 </br>
 
 
-# API 문서
+# :key: API 문서
 swagger 사용해보기
 
 
@@ -91,7 +117,7 @@ swagger 사용해보기
 </br>
 
 
-# DB 
+# :key: DB 
 
 ### user table
 
@@ -130,7 +156,7 @@ swagger 사용해보기
 </br>
 
 
-# dependencies
+# :key: dependencies
 ```
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -173,7 +199,6 @@ dependencies {
 </br>
 </br>
 
-# 찾아본 ..
 
 ## JWT(JSON Web Token)
 - header, payload, signature로 나누어진다.
@@ -190,7 +215,6 @@ dependencies {
     - OpenBSD에서 기본 암호 인증 메커니즘으로 사용
     - 입력 값으로 72byte character 제약
     
-3. 
 
 
 ## Token이 필요한 이유?
@@ -254,7 +278,7 @@ dependencies {
 </br>
 
 
-# Error Log
+# :key: Error Log
 1. BCrypto를 사용하기 위해 dependecies에 implementation 'org.springframework.boot:spring-boot-starter-security' 을 추가했다.
   	- 이것을 추가하고 POSTMAN으로 테스트를 해보니 spring security가 생겨서 401 에러가 발생했고, web으로 url을 입력해보니, 로그인을 하라는 창이 나왔다.
   	- 원인 : 추가한 dependency는 spring security를 활성화시켜주었다.
