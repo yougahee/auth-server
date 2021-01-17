@@ -28,10 +28,10 @@ public class MyPageController {
     }
 
     @GetMapping("/point/{coin}")
-    public ResponseEntity<Message> updatePoint(@RequestHeader(value = "token") String token,
+    public ResponseEntity<Void> updatePoint(@RequestHeader(value = "token") String token,
                                                @RequestHeader(value = "x-forward-email") String email,
                                                @PathVariable("coin") int coin) {
         long point = myPageService.updatePoint(email, coin);
-        return ResponseEntity.ok().body(new Message(point, ResponseMessage.POINT_UPDATE_SUCCESS));
+        return ResponseEntity.ok().build();
     }
 }
