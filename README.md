@@ -1,6 +1,7 @@
 # :closed_lock_with_key: Authorization Server
 
-## Server
+Server
+------
 - Spring Boot
 - JPA
 - JWT ( JSON Web Token)
@@ -9,7 +10,8 @@
 </br>
 
 # :key: 구현요소(FLOW)
-[ 회원가입 ]
+회원가입
+-------
 
 1. 이메일을 입력하고 인증번호 받기 버튼을 누른다.
     1. 해당 이메일이 서비스에 존재한다면 이메일이 중복되었다는 응답메세지가 간다.
@@ -22,24 +24,35 @@
     2. 패스워드는 8~20자 사이의 문자로 영어, 숫자, 특수문자 조합으로 이루어져있다.
 4. 정상적으로 회원가입이 된다.
 
-[로그인]
+</br>
+
+로그인
+-------
 
 1. 이메일 아이디, 비밀번호 입력 후 로그인 버튼을 누른다.
     1. 회원이라면 로그인이 되고 메인화면으로 넘어간다.
     2. 회원이 아니라면 로그인이 되지 않는다.
     3. 로그인시 AccessToken과 RefreshToken을 응답으로 넘겨준다.
 
-[비밀번호 찾기]
+</br>
 
-1. 임시비밀번호 발급
+비밀번호 찾기
+-------
+1. 임시비밀번호 발급  
 
-[마이페이지]
+</br>
+
+마이페이지
+---------
 
 1. 마이페이지에 들어오면 닉네임, 포인트, 내가 팔로우한 사람들의 목록이 뜬다.
 2. 포인트를 충전할 수 있다.
     1. 스트리밍 중에 포인트를 사용할 수 있다. 
 
-[그외]
+</br>
+
+그외
+----
 
 1. Refresh Token 발급
 2. 비밀번호 찾기
@@ -101,56 +114,80 @@
 		- CSRF 
 
 
-
 10. Log 관리 
 
 
 </br>
 </br>
 
-
 # :key: API 문서
-swagger 사용해보기
-
+- swagger 사용해보기
+- 사내 위키에 UpLoad
 
 </br>
 </br>
 
 
-# :key: DB 
+# 📂 ERD
 
-### user table
-
-| Column | type |  설명 | PK/FK |
-| :----: | :------: | :----------------------: | :----: |
-| user_idx | BIGINT | index값 ( 자동 생성 ) | PK |
-| email | VARCHAR | user ID(이메일형식) |  |
-| password | VARCHAR | user 비밀번호 |  |
-| salt | VARCHAR | user 비밀번호 Salt |  |
-| nickname | VARCHAR | 닉네임 |  |
-| grade | INT |  |  |
-| point | BIGINT |  |  |
-| nickname_check | TINYINT | 닉네임 중복체크 |  |
-| create_at | DATETIME | 생성날짜 |  |
-| login_at | DATETIME | 로그인한 시간 |  |
-| update_at | DATETIME | update한 시간 |  |
-
-### follow table
+🏃‍♂️ user
+----------
 
 | Column | type |  설명 | PK/FK |
 | :----: | :------: | :----------------------: | :----: |
-| follower_idx | BIGINT | | FK |
-| following_idx | BIGINT | | FK |
+| user_idx | BIGINT | 유저 고유값 ( 자동 생성 ) | PK |
+| email | VARCHAR(255) | user ID(이메일형식) |  |
+| pwd | VARCHAR(255) | user 비밀번호 |  |
+| salt | VARCHAR(255) | user 비밀번호 Salt |  |
+| nickname | VARCHAR(255) | 닉네임 |  |
+| grade | TINYINT | 유저상태 | Default 0  |
+| point | BIGINT | 포인트 | Default 50000 |
+| create_dt | DATETIME | 생성날짜 |  |
+| login_dt | DATETIME | 로그인한 시간 |  |
+| update_dt | DATETIME | update한 시간 |  |
 
+</br>
+</br>
 
-### user의 grade정보
+:punch: follow
+----------
+
+| Column | type |  설명 | PK/FK |
+| :----: | :------: | :----------------------: | :----: |
+| follow_idx | BIGINT | | FK |
+| user_follow_idx | BIGINT | | FK |
+| user_streamer_idx | BIGINT | | FK |
+| create_dt | DATETIME | 생성날짜 |  |
+
+</br>
+</br>
+
+:door: streaming_room
+----------
+
+| Column | type |  설명 | PK/FK |
+| :----: | :------: | :----------------------: | :----: |
+| room_idx | BIGINT | 방 고유값 ( 자동 생성 ) | PK |
+| user_idx | BIGINT | 스트리머고유값 |  |
+| title | VARCHAR(255) | 방제목 |  |
+| thumnail_location | VARCHAR(1000) | 썸네일저장경로 |  |
+| video_location | VARCHAR(1000) | 영상저장경로 |  |
+| created_dt | DATETIME | 방송시작날짜 | NOT NULL  |
+| end_stream_dt | DATETIME | 방송종료날짜 |  |
+
+</br>
+</br>
+
+user의 grade정보
+----------------
+
 | Number | 설명 |
 | :----: | :----------------------: | 
 | 0 | 이메일 인증하기 전 |
 | 1 | 회원가입완료(일반회원) | 
 | 3 | 이메일 인증을 한 회원 |  
-| 99 | 관리자 |  
-| 100 | 탈퇴한 회원 |  
+| 5 | 관리자 |  
+| 9 | 탈퇴한 회원 |  
 
 </br>
 </br>
@@ -204,8 +241,7 @@ dependencies {
 - header, payload, signature로 나누어진다.
 - token, refresh token
 
-## jasypt
-
+</br>
 </br>
 
 ## 사용자 패스워드 암호화방법
@@ -215,6 +251,8 @@ dependencies {
     - OpenBSD에서 기본 암호 인증 메커니즘으로 사용
     - 입력 값으로 72byte character 제약
     
+</br>
+</br>
 
 
 ## Token이 필요한 이유?
@@ -224,17 +262,23 @@ dependencies {
   - 하지만, 매번 로그인을 해서 증명하는 것은 너무나 번거로운 일이다. 그렇기 때문에, 로그인을 했을 때, token을 발급받아서 클라이언트에서 token('나'를 증명해줄 증명서)을 저장하여 인증이 필요한 요청 header에 함께 보낸다. 
 
 </br>
+</br>
+
 
 ## 그렇다면 RefreshToken은 왜 사용하는가?
 - 클라이언트와 서버사이에서 정보를 주고받을 때, Token을 활용하는데, HTTP로 보내지는 과정에서 갈취를 당할 수도 있다. 
 - 그렇기 때문에 Access Token의 유지시간을 짧게 주고 Refresh Token을 사용한다. 
 
 </br>
+</br>
+
 
 ## 일반적으로 RefreshToken은 회원 DB에 저장한다고 한다. 왜일까?
 - refresh token으로 access token을 재발급 받을 때, refresh token이 서버가 발급한 정상적인 토큰인지 다시 한번 검증하기 위한 것
 
 </br>
+</br>
+
 
 ## 구현한 방법
 1. 사용자가 로그인을 했을 때, access token과 refresh token을 발급해준다.  
@@ -250,29 +294,36 @@ dependencies {
 </br>
 
 
-# 비밀번호 암호화
+비밀번호 암호화
+=============
+
 - SHA-256
 - salt
 - BCryptPasswordEncoder
 
 </br>
 
-### BCryptPasswordEncoder?
+BCryptPasswordEncoder?
+----------------------
 - 비밀번호 단방향 해시 알고리즘 중 하나
 - 암호화시킬 text + salt를 더하여 digest를 만드는 것이다. 
 
-### 그외
+그외
+----------------------
 1. PBKDF2(Password-Based Key Derivation Function)
 2. scrypt
 
-### SHA-256이란?
+SHA-256이란?
+-----------
 - Secure Hash Algorithm의 약자로 해시함수를 사용하는 알고리즘이다. 
 
-### MD5란?
+MD5란?
+------
 - MD5(Message-Digest algorithm 5)는 128비트 암호화 해시 함수이다.
 - 심한 암호화 결함이 있기 때문에 보안관련 용도로는 권장하지 않고 있으며 보통 프로그램이나 파일이 원본 그대로인지 확인하는 무결성 검사등에 활용된다. 
 
-### 대부분 SHA-256을 더 사용하고 MD5는 쓰는 것을 잘 보지 못했다. 그 이유는?
+대부분 SHA-256을 더 사용하고 MD5는 쓰는 것을 잘 보지 못했다. 그 이유는?
+-----------------------------------------------------------
 - 현재 MD5 알고리즘을 보안 관련 용도로 쓰는 것을 권장하지 않고 있으며, 심각한 보안 문제를 야기할 수 도 있다고 한다. ( SSL 인증서를 변조하는 것이 가능하다는 것이 발표되었다. )
 
 </br>
@@ -284,14 +335,17 @@ dependencies {
   	- 원인 : 추가한 dependency는 spring security를 활성화시켜주었다.
   	- 해결방법 : implementation 'org.springframework.security:spring-security-crypto:5.1.5.RELEASE' 대체
 
+</br>
+
 2. E-mail 전송하기 위해 사용한 JavaMailSender가 계속해서 NULL값이 들어왔다.
   	- 기본 생성자 주입을 해주면 되는데, @AutoWired를 썼더니 순환호출로 인해 메모리가 터져서 컴퓨터가 다운됐다.
 	- @RequiredArgsConstructor 을 사용하자!
 		- 이것을 사용할 때는 생성자 주입이 될 대상을 private final로 적어주어야 한다.
+
+</br>
 
 3. properties에서 gmail로 메일을 보내기 위한 설정도 다 해놓았고, JavaMailSender에도 NULL값이 들어가지 않는것도 확인했는데, MailSendException이 발생하였다.
 	- 에러메시지를 보니 SSL, SSLHandShakeException, certification등 보안관련한 용어들이 나왔다.
 	- 구글링 끝에 보안 프로그램을 끄고 돌려보니 메일이 잘 온 것을 확인할 수 있었다. 
 
 </br>
-
