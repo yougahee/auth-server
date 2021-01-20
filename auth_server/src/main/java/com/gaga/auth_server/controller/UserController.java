@@ -42,9 +42,7 @@ public class UserController {
         TokenDTO tokenDTO = userService.getUserToken(loginDTO);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .header("AccessToken", tokenDTO.getAccessToken())
-                .header("RefreshToken", tokenDTO.getRefreshToken())
-                .body(new Message(responseMessage.LOG_IN_SUCCESS));
+                .body(new Message(tokenDTO, responseMessage.LOG_IN_SUCCESS));
     }
 
     @PostMapping("/signup")
@@ -84,9 +82,7 @@ public class UserController {
         TokenDTO tokenDTO = userService.getReissueToken(refreshToken);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .header("AccessToken", tokenDTO.getAccessToken())
-                .header("RefreshToken", tokenDTO.getRefreshToken())
-                .body(new Message(responseMessage.REISSUE_REFRESH_TOKEN));
+                .body(new Message(tokenDTO, responseMessage.REISSUE_REFRESH_TOKEN));
     }
 
     @GetMapping("/find-pw")
