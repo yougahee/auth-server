@@ -71,6 +71,6 @@ public class AuthControllerAdvice {
     @ExceptionHandler(value = {RedisConnectionFailureException.class})
     public ResponseEntity<Message> redisConnectionFailureException(RedisConnectionFailureException rcfe) {
         log.error(rcfe.getMessage(), rcfe);
-        return ResponseEntity.ok().body(new Message("서버내부오류입니다."));
+        return ResponseEntity.badRequest().body(new Message("서버내부오류입니다."));
     }
 }
