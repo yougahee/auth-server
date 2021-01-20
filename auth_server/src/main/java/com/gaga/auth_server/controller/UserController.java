@@ -34,7 +34,7 @@ public class UserController {
     @GetMapping("/test/remove/{email}")
     public ResponseEntity<Message> testDeleteEmail(@PathVariable("email") String email) {
         userService.removeEmailRecord(email);
-        return ResponseEntity.ok().body(new Message(responseMessage.TEST_DELETE_EMAIL_RECORD));
+        return ResponseEntity.ok(new Message());
     }
 
     @PostMapping("/login")
@@ -42,23 +42,25 @@ public class UserController {
         TokenDTO tokenDTO = userService.getUserToken(loginDTO);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(tokenDTO, responseMessage.LOG_IN_SUCCESS));
+                .header("AccessToken", tokenDTO.getAccessToken())
+                .header("RefreshToken", tokenDTO.getRefreshToken())
+                .body(new Message(responseMessage.LOG_IN_SUCCESS));
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<Message> signUp(@Valid @RequestBody UserInfoRequestDTO userInfo) {
+    public ResponseEntity<Void> signUp(@Valid @RequestBody UserInfoRequestDTO userInfo) {
         userService.insertUser(userInfo);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(responseMessage.SIGN_UP_SUCCESS));
+                .build();
     }
 
     @PostMapping("/check/nickname")
-    public ResponseEntity<Message> checkNickName(@Valid @RequestBody UserNicknameDTO nicknameDTO) {
+    public ResponseEntity<Void> checkNickName(@Valid @RequestBody UserNicknameDTO nicknameDTO) {
         userService.checkNickname(nicknameDTO.getNickname());
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(responseMessage.CAN_USE_NICKNAME));
+                .build();
     }
 
     @PostMapping("/check/email")
@@ -70,52 +72,54 @@ public class UserController {
     }
 
     @PostMapping("/check/email-code")
-    public ResponseEntity<Message> checkEmailCode(@Valid @RequestBody EmailAuthorizationDTO emailDTO) {
+    public ResponseEntity<Void> checkEmailCode(@Valid @RequestBody EmailAuthorizationDTO emailDTO) {
         userService.checkEmailCode(emailDTO.getEmail().toLowerCase(), emailDTO.getCode());
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(responseMessage.CERTIFICATE_EMAIL));
+                .build();
     }
 
     @GetMapping("/refresh")
-    public ResponseEntity<Message> reissueToken(@RequestHeader(value = "refresh_token") String refreshToken) {
+    public ResponseEntity<Message> reissueToken(@RequestHeader(value = "RefreshToken") String refreshToken) {
         TokenDTO tokenDTO = userService.getReissueToken(refreshToken);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(tokenDTO, responseMessage.REISSUE_REFRESH_TOKEN));
+                .header("AccessToken", tokenDTO.getAccessToken())
+                .header("RefreshToken", tokenDTO.getRefreshToken())
+                .body(new Message(responseMessage.REISSUE_REFRESH_TOKEN));
     }
 
     @GetMapping("/find-pw")
-    public ResponseEntity<Message> findPassword(@RequestHeader(value = "x-forward-email") String email) {
+    public ResponseEntity<Void> findPassword(@RequestHeader(value = "x-forward-email") String email) {
         userService.findPassword(email);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(responseMessage.SEND_TEMP_PW_CODE));
+                .build();
     }
 
     @PostMapping("/change/pw")
-    public ResponseEntity<Message> changePassword(@RequestHeader(value = "x-forward-email") String email,
+    public ResponseEntity<Void> changePassword(@RequestHeader(value = "x-forward-email") String email,
                                                   @Valid @RequestBody UserPasswordDTO passwordDTO) {
         userService.changePassword(email, passwordDTO.getPassword());
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(responseMessage.CHANGE_PW_SUCCESS));
+                .build();
     }
 
     @PostMapping("/change/nickname")
-    public ResponseEntity<Message> changeNickName(@Valid @RequestHeader(value = "x-forward-email") String email,
+    public ResponseEntity<Void> changeNickName(@Valid @RequestHeader(value = "x-forward-email") String email,
                                                   @RequestBody UserNicknameDTO nicknameDTO) {
         userService.changeNickname(email, nicknameDTO.getNickname());
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(responseMessage.CHANGE_NICKNAME_SUCCESS));
+                .build();
     }
 
     @GetMapping("/withdraw")
-    public ResponseEntity<Message> leaveUser(@RequestHeader(value = "x-forward-email") String email) {
+    public ResponseEntity<Void> leaveUser(@RequestHeader(value = "x-forward-email") String email) {
         userService.leaveUser(email);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(responseMessage.WITHDRAW_MORSE_SUCCESS));
+                .build();
     }
 }
