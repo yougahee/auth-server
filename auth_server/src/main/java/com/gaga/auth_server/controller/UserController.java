@@ -96,7 +96,7 @@ public class UserController {
     @PostMapping("/change/pw")
     public ResponseEntity<Void> changePassword(@RequestHeader(value = "x-forward-email") String email,
                                                   @Valid @RequestBody UserPasswordDTO passwordDTO) {
-        userService.changePassword(email, passwordDTO.getPassword());
+        userService.changePassword(email, passwordDTO.getOld_password(), passwordDTO.getPassword());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .build();

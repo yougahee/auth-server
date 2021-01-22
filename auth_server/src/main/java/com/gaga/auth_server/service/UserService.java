@@ -144,8 +144,10 @@ public class UserService {
         insertPassword(user, tempPW);
     }
 
-    public void changePassword(String email, String pw) {
+    public void changePassword(String email, String oldPW, String pw) {
         User user = findByEmailOrThrow(email);
+
+        if(!user.getPassword().equals(oldPW)) throw new NotFoundException(responseMSG.NOT_CORRECT_PW);
         insertPassword(user, pw);
     }
 

@@ -36,7 +36,7 @@ public class AuthControllerAdvice {
         log.error(ue.getMessage(), ue);
         return ResponseEntity
                 .badRequest()
-                .body(new ErrorMessage(ue.getMessage(), 400, req.getRequestURL().toString()));
+                .body(new ErrorMessage(ue.getMessage(), 400, req.getRequestURI()));
     }
 
     @ExceptionHandler(value = {NoExistEmailException.class})
@@ -44,7 +44,7 @@ public class AuthControllerAdvice {
         log.error(nee.getMessage(), nee);
         return ResponseEntity
                 .badRequest()
-                .body(new ErrorMessage(nee.getMessage(), 400, req.getRequestURL().toString()));
+                .body(new ErrorMessage(nee.getMessage(), 400, req.getRequestURI()));
     }
 
     @ExceptionHandler(value = {NotFoundException.class})
@@ -52,7 +52,7 @@ public class AuthControllerAdvice {
         log.error(nfe.getMessage(), nfe);
         return ResponseEntity
                 .badRequest()
-                .body(new ErrorMessage(nfe.getMessage(), 400, req.getRequestURL().toString()));
+                .body(new ErrorMessage(nfe.getMessage(), 400, req.getRequestURI()));
     }
 
     @ExceptionHandler(value = {NullPointerException.class})
@@ -60,7 +60,7 @@ public class AuthControllerAdvice {
         log.error(ne.getMessage(), ne);
         return ResponseEntity
                 .badRequest()
-                .body(new ErrorMessage(ne.getMessage(), 400, req.getRequestURL().toString()));
+                .body(new ErrorMessage(ne.getMessage(), 400, req.getRequestURI()));
     }
 
     @ExceptionHandler(value = {MailException.class})
@@ -68,7 +68,7 @@ public class AuthControllerAdvice {
         log.error(mse.getMessage(), mse);
         return ResponseEntity
                 .badRequest()
-                .body(new ErrorMessage(mse.getMessage(), 400, req.getRequestURL().toString()));
+                .body(new ErrorMessage(mse.getMessage(), 400, req.getRequestURI()));
     }
 
     @ExceptionHandler(value = {AlreadyExistException.class})
@@ -76,7 +76,7 @@ public class AuthControllerAdvice {
         log.error(ene.getMessage(), ene);
         return ResponseEntity
                 .badRequest()
-                .body(new ErrorMessage(ene.getMessage(), 400, req.getRequestURL().toString()));
+                .body(new ErrorMessage(ene.getMessage(), 400, req.getRequestURI()));
     }
 
     @ExceptionHandler(value = {NoNegativeNumberException.class})
@@ -84,7 +84,7 @@ public class AuthControllerAdvice {
         log.error(nne.getMessage(), nne);
         return ResponseEntity
                 .badRequest()
-                .body(new ErrorMessage(nne.getMessage(), 400, req.getRequestURL().toString()));
+                .body(new ErrorMessage(nne.getMessage(), 400, req.getRequestURI()));
     }
 
     @ExceptionHandler(value = {RedisConnectionFailureException.class})
@@ -92,6 +92,6 @@ public class AuthControllerAdvice {
         log.error(rcfe.getMessage(), rcfe);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorMessage("서버내부오류입니다.", 500, req.getRequestURL().toString()));
+                .body(new ErrorMessage("서버내부오류입니다.", 500, req.getRequestURI()));
     }
 }
