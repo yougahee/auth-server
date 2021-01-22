@@ -147,8 +147,9 @@ public class UserService {
     public void changePassword(String email, String oldPW, String pw) {
         User user = findByEmailOrThrow(email);
 
-        String encryptOldPW = encryption.encode(oldPW);
-        if(!user.getPassword().equals(encryptOldPW)) throw new NotFoundException(responseMSG.NOT_CORRECT_PW);
+        if (!encryption.encodeWithSalt(user.getPassword(), user.getSalt()).equals(oldPW))
+            throw new NotFoundException(responseMSG.NOT_CORRECT_PW);
+
         insertPassword(user, pw);
     }
 
