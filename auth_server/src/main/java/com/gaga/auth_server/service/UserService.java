@@ -1,8 +1,7 @@
 package com.gaga.auth_server.service;
 
-import com.gaga.auth_server.enums.RoleType;
 import com.gaga.auth_server.utils.*;
-import com.gaga.auth_server.dto.MailDTO;
+import com.gaga.auth_server.utils.mail.MailDTO;
 import com.gaga.auth_server.dto.request.UserInfoRequestDTO;
 import com.gaga.auth_server.dto.request.LoginDTO;
 import com.gaga.auth_server.dto.response.*;
@@ -10,6 +9,7 @@ import com.gaga.auth_server.enums.TokenEnum;
 import com.gaga.auth_server.exception.*;
 import com.gaga.auth_server.model.User;
 import com.gaga.auth_server.repository.UserInfoRepository;
+import com.gaga.auth_server.utils.mail.CustomMailSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -108,7 +108,7 @@ public class UserService {
         if (!encryption.encodeWithSalt(loginDTO.getPassword(), user.getSalt()).equals(user.getPassword()))
             throw new NotFoundException(responseMSG.NOT_CORRECT_PW);
 
-        TokenDTO responseDTO = jwtUtils.generateToken(userEmail);
+        TokenDTO responseDTO = jwtUtils.generateToken(userEmail, user.getNickname());
         String refreshToken = responseDTO.getRefreshToken();
 
         redisTemplate.opsForValue().set(refreshToken, userEmail);
@@ -126,13 +126,13 @@ public class UserService {
         if (Boolean.FALSE.equals(redisTemplate.hasKey(refreshToken)))
             throw new UnauthorizedException(responseMSG.EXPIRED_TOKEN);
 
-        String email = jwtUtils.decodeJWT(refreshToken);
-        TokenDTO tokenDTO = jwtUtils.generateToken(email);
+        UserInfoRequestDTO userInfo = jwtUtils.decodeJWT(refreshToken);
+        TokenDTO tokenDTO = jwtUtils.generateToken(userInfo.getEmail(), userInfo.getNickname());
+        log.info(userInfo.getNickname());
 
         redisTemplate.delete(refreshToken);
-        redisTemplate.opsForValue().set(tokenDTO.getRefreshToken(), email);
+        redisTemplate.opsForValue().set(tokenDTO.getRefreshToken(), userInfo.getEmail());
         redisTemplate.expire(tokenDTO.getRefreshToken(), 7, TimeUnit.DAYS);
-
         return tokenDTO;
     }
 

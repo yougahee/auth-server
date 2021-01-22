@@ -1,6 +1,6 @@
 package com.gaga.auth_server.controller;
 
-import com.gaga.auth_server.dto.Message;
+import com.gaga.auth_server.dto.message.Message;
 import com.gaga.auth_server.dto.request.*;
 import com.gaga.auth_server.dto.response.*;
 import com.gaga.auth_server.service.UserService;

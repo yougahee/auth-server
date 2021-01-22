@@ -1,9 +1,10 @@
 package com.gaga.auth_server;
 
-import com.gaga.auth_server.dto.Message;
+import com.gaga.auth_server.dto.message.ErrorMessage;
 import com.gaga.auth_server.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
 import org.springframework.validation.FieldError;
@@ -11,66 +12,86 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Slf4j
 @ControllerAdvice
 public class AuthControllerAdvice {
-    Message errorMessage = new Message();
+    ErrorMessage errorMessage = new ErrorMessage();
 
     @ExceptionHandler(value = {MethodArgumentNotValidException.class})
-    public ResponseEntity<Message> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ErrorMessage> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.error(e.getMessage(), e);
         e.getBindingResult().getAllErrors().forEach((error) -> {
             log.error("filedName : " + ((FieldError) error).getField());
             errorMessage.setMessage(error.getDefaultMessage());
         });
-        return ResponseEntity.badRequest().body(errorMessage);
+        return ResponseEntity
+                .badRequest()
+                .body(errorMessage);
     }
 
     @ExceptionHandler(value = {UnauthorizedException.class})
-    public ResponseEntity<Message> unauthorizedException(UnauthorizedException ue) {
+    public ResponseEntity<ErrorMessage> unauthorizedException(HttpServletRequest req, UnauthorizedException ue) {
         log.error(ue.getMessage(), ue);
-        return ResponseEntity.badRequest().body(new Message(ue.getMessage()));
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorMessage(ue.getMessage(), 400, req.getRequestURL().toString()));
     }
 
     @ExceptionHandler(value = {NoExistEmailException.class})
-    public ResponseEntity<Message> noExistEmailException(NoExistEmailException nee) {
+    public ResponseEntity<ErrorMessage> noExistEmailException(HttpServletRequest req, NoExistEmailException nee) {
         log.error(nee.getMessage(), nee);
-        return ResponseEntity.badRequest().body(new Message(nee.getMessage()));
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorMessage(nee.getMessage(), 400, req.getRequestURL().toString()));
     }
 
     @ExceptionHandler(value = {NotFoundException.class})
-    public ResponseEntity<Message> notFoundException(NotFoundException nfe) {
+    public ResponseEntity<ErrorMessage> notFoundException(HttpServletRequest req, NotFoundException nfe) {
         log.error(nfe.getMessage(), nfe);
-        return ResponseEntity.badRequest().body(new Message(nfe.getMessage()));
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorMessage(nfe.getMessage(), 400, req.getRequestURL().toString()));
     }
 
     @ExceptionHandler(value = {NullPointerException.class})
-    public ResponseEntity<Message> nullPointerException(NullPointerException ne) {
+    public ResponseEntity<ErrorMessage> nullPointerException(HttpServletRequest req, NullPointerException ne) {
         log.error(ne.getMessage(), ne);
-        return ResponseEntity.badRequest().body(new Message(ne.getMessage()));
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorMessage(ne.getMessage(), 400, req.getRequestURL().toString()));
     }
 
     @ExceptionHandler(value = {MailException.class})
-    public ResponseEntity<Message> mailSendException(MailException mse) {
+    public ResponseEntity<ErrorMessage> mailSendException(HttpServletRequest req, MailException mse) {
         log.error(mse.getMessage(), mse);
-        return ResponseEntity.badRequest().body(new Message(mse.getMessage()));
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorMessage(mse.getMessage(), 400, req.getRequestURL().toString()));
     }
 
     @ExceptionHandler(value = {AlreadyExistException.class})
-    public ResponseEntity<Message> existNickNameException(AlreadyExistException ene) {
+    public ResponseEntity<ErrorMessage> existNickNameException(HttpServletRequest req, AlreadyExistException ene) {
         log.error(ene.getMessage(), ene);
-        return ResponseEntity.badRequest().body(new Message(ene.getMessage()));
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorMessage(ene.getMessage(), 400, req.getRequestURL().toString()));
     }
 
     @ExceptionHandler(value = {NoNegativeNumberException.class})
-    public ResponseEntity<Message> noNegativeNumberException(NoNegativeNumberException nne) {
+    public ResponseEntity<ErrorMessage> noNegativeNumberException(HttpServletRequest req, NoNegativeNumberException nne) {
         log.error(nne.getMessage(), nne);
-        return ResponseEntity.badRequest().body(new Message(nne.getMessage()));
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorMessage(nne.getMessage(), 400, req.getRequestURL().toString()));
     }
 
     @ExceptionHandler(value = {RedisConnectionFailureException.class})
-    public ResponseEntity<Message> redisConnectionFailureException(RedisConnectionFailureException rcfe) {
+    public ResponseEntity<ErrorMessage> redisConnectionFailureException(HttpServletRequest req, RedisConnectionFailureException rcfe) {
         log.error(rcfe.getMessage(), rcfe);
-        return ResponseEntity.badRequest().body(new Message("서버내부오류입니다."));
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorMessage("서버내부오류입니다.", 500, req.getRequestURL().toString()));
     }
 }

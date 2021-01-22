@@ -1,7 +1,6 @@
 package com.gaga.auth_server.dto;
 
 import com.gaga.auth_server.model.User;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

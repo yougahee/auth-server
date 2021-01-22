@@ -2,13 +2,14 @@ package com.gaga.auth_server.dto.request;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 @NoArgsConstructor
-@Getter
+@Getter @Setter
 public class UserInfoRequestDTO {
 
     @NotBlank(message = "아이디(이메일)은 필수 입력입니다.")

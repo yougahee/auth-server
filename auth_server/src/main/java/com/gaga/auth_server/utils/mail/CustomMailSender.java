@@ -1,6 +1,5 @@
-package com.gaga.auth_server.utils;
+package com.gaga.auth_server.utils.mail;
 
-import com.gaga.auth_server.dto.MailDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

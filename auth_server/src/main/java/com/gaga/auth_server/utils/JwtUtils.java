@@ -3,6 +3,7 @@ package com.gaga.auth_server.utils;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.gaga.auth_server.dto.request.UserInfoRequestDTO;
 import com.gaga.auth_server.dto.response.TokenDTO;
 import com.gaga.auth_server.enums.TokenEnum;
 import com.gaga.auth_server.exception.NotFoundException;
@@ -31,6 +32,8 @@ public class JwtUtils {
     @Value("${jwt.secret.rt}")
     private String REFRESH_SECRET_KEY;
 
+    private String CLAIM_NICKNAME = "nickname";
+
     //accessToken -> 1hour
     private static final long ACCESS_TOKEN_VALID_MILLISECOND = 1000L * 60 * 60;
     //refreshToken -> 1week
@@ -53,9 +56,9 @@ public class JwtUtils {
         if(claims.getBody().getExpiration().before(new Date())) throw new UnauthorizedException();
     }
 
-    public TokenDTO generateToken(String email) {
+    public TokenDTO generateToken(String email, String nickname) {
         Map<String, Object> claims = new HashMap<>();
-        //claims.put("nickname", user.getNickname());
+        claims.put(CLAIM_NICKNAME, nickname);
         return createToken(claims, email);
     }
 
@@ -80,9 +83,12 @@ public class JwtUtils {
         return new TokenDTO(accessToken, refreshToken);
     }
 
-    public String decodeJWT(String token) {
+    public UserInfoRequestDTO decodeJWT(String token) {
         if(token == null || token.equals("")) throw new NotFoundException("token이 없습니다.");
-        return JWT.decode(token).getSubject();
+        UserInfoRequestDTO userInfo = new UserInfoRequestDTO();
+        userInfo.setEmail(JWT.decode(token).getSubject());
+        userInfo.setNickname(JWT.decode(token).getClaim(CLAIM_NICKNAME).asString());
+        return userInfo;
     }
 
     public static void main(String[] args) {

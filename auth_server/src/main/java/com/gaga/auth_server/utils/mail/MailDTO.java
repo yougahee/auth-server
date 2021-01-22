@@ -1,4 +1,4 @@
-package com.gaga.auth_server.dto;
+package com.gaga.auth_server.utils.mail;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
