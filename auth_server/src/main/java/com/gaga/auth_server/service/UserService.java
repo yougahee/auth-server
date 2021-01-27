@@ -1,5 +1,6 @@
 package com.gaga.auth_server.service;
 
+import com.gaga.auth_server.dto.UserDTO;
 import com.gaga.auth_server.utils.*;
 import com.gaga.auth_server.utils.mail.MailDTO;
 import com.gaga.auth_server.dto.request.UserInfoRequestDTO;
@@ -108,7 +109,7 @@ public class UserService {
         if (!encryption.encodeWithSalt(loginDTO.getPassword(), user.getSalt()).equals(user.getPassword()))
             throw new NotFoundException(responseMSG.NOT_CORRECT_PW);
 
-        TokenDTO responseDTO = jwtUtils.generateToken(userEmail, user.getNickname());
+        TokenDTO responseDTO = jwtUtils.generateToken(UserDTO.fromEntity(user));
         String refreshToken = responseDTO.getRefreshToken();
 
         redisTemplate.opsForValue().set(refreshToken, userEmail);
@@ -126,12 +127,12 @@ public class UserService {
         if (Boolean.FALSE.equals(redisTemplate.hasKey(refreshToken)))
             throw new UnauthorizedException(responseMSG.EXPIRED_TOKEN);
 
-        UserInfoRequestDTO userInfo = jwtUtils.decodeJWT(refreshToken);
-        TokenDTO tokenDTO = jwtUtils.generateToken(userInfo.getEmail(), userInfo.getNickname());
-        log.info(userInfo.getNickname());
+        UserDTO userDTO = jwtUtils.decodeJWT(refreshToken);
+        TokenDTO tokenDTO = jwtUtils.generateToken(userDTO);
+        log.info(userDTO.getNickname());
 
         redisTemplate.delete(refreshToken);
-        redisTemplate.opsForValue().set(tokenDTO.getRefreshToken(), userInfo.getEmail());
+        redisTemplate.opsForValue().set(tokenDTO.getRefreshToken(), userDTO.getEmail());
         redisTemplate.expire(tokenDTO.getRefreshToken(), 7, TimeUnit.DAYS);
         return tokenDTO;
     }

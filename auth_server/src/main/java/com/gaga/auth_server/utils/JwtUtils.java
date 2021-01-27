@@ -5,6 +5,8 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.gaga.auth_server.dto.UserDTO;
 import com.gaga.auth_server.dto.request.UserInfoRequestDTO;
 import com.gaga.auth_server.dto.response.TokenDTO;
 import com.gaga.auth_server.enums.TokenEnum;
@@ -12,6 +14,7 @@ import com.gaga.auth_server.exception.NotFoundException;
 import com.gaga.auth_server.exception.NotTokenException;
 import com.gaga.auth_server.exception.SignatureVerificationException;
 import com.gaga.auth_server.exception.UnauthorizedException;
+import com.gaga.auth_server.model.User;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +38,7 @@ public class JwtUtils {
     private String REFRESH_SECRET_KEY;
 
     private final String CLAIM_NICKNAME = "nickname";
+    private final String USER_IDX = "user_idx";
 
     //accessToken -> 1hour
     private static final long ACCESS_TOKEN_VALID_MILLISECOND = 1000L * 60 * 60;
@@ -73,10 +77,11 @@ public class JwtUtils {
         }
     }
 
-    public TokenDTO generateToken(String email, String nickname) {
+    public TokenDTO generateToken(UserDTO user) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put(CLAIM_NICKNAME, nickname);
-        return createToken(claims, email);
+        claims.put(CLAIM_NICKNAME, user.getNickname());
+        claims.put(USER_IDX, user.getUserIdx());
+        return createToken(claims, user.getEmail());
     }
 
     public TokenDTO createToken(Map<String, Object> claims, String sub) {
@@ -100,12 +105,14 @@ public class JwtUtils {
         return new TokenDTO(accessToken, refreshToken);
     }
 
-    public UserInfoRequestDTO decodeJWT(String token) {
+    public UserDTO decodeJWT(String token) {
         if(token == null || token.equals("")) throw new NotFoundException("token이 없습니다.");
-        UserInfoRequestDTO userInfo = new UserInfoRequestDTO();
-        userInfo.setEmail(JWT.decode(token).getSubject());
-        userInfo.setNickname(JWT.decode(token).getClaim(CLAIM_NICKNAME).asString());
-        return userInfo;
+        UserDTO userDTO = new UserDTO();
+        DecodedJWT jwt = JWT.decode(token);
+        userDTO.setEmail(jwt.getSubject());
+        userDTO.setNickname(jwt.getClaim(CLAIM_NICKNAME).asString());
+        userDTO.setUserIdx(jwt.getClaim(USER_IDX).asLong());
+        return userDTO;
     }
 
     public static void main(String[] args) {
