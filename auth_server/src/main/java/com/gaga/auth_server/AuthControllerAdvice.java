@@ -2,6 +2,7 @@ package com.gaga.auth_server;
 
 import com.gaga.auth_server.dto.message.ErrorMessage;
 import com.gaga.auth_server.exception.*;
+import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.HttpStatus;
@@ -110,5 +111,21 @@ public class AuthControllerAdvice {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorMessage(se.getMessage(), 500, req.getRequestURI()));
+    }
+
+    @ExceptionHandler(value = {SignatureVerificationException.class})
+    public ResponseEntity<ErrorMessage> signatureVerificationException(HttpServletRequest req, SignatureVerificationException sve) {
+        log.error(sve.getMessage(), sve);
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorMessage(sve.getMessage(), HttpStatus.UNAUTHORIZED.value(), req.getRequestURI()));
+    }
+
+    @ExceptionHandler(value = {JwtException.class})
+    public ResponseEntity<ErrorMessage> signatureVerificationException(HttpServletRequest req, JwtException je) {
+        log.error(je.getMessage(), je);
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorMessage(je.getMessage(), HttpStatus.UNAUTHORIZED.value(), req.getRequestURI()));
     }
 }

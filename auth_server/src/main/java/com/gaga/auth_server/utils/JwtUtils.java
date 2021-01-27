@@ -10,8 +10,10 @@ import com.gaga.auth_server.dto.response.TokenDTO;
 import com.gaga.auth_server.enums.TokenEnum;
 import com.gaga.auth_server.exception.NotFoundException;
 import com.gaga.auth_server.exception.NotTokenException;
+import com.gaga.auth_server.exception.SignatureVerificationException;
 import com.gaga.auth_server.exception.UnauthorizedException;
 import io.jsonwebtoken.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -32,9 +34,7 @@ public class JwtUtils {
     @Value("${jwt.secret.rt}")
     private String REFRESH_SECRET_KEY;
 
-    private String CLAIM_NICKNAME = "nickname";
-
-    JWTVerifier jwtVerifier;
+    private final String CLAIM_NICKNAME = "nickname";
 
     //accessToken -> 1hour
     private static final long ACCESS_TOKEN_VALID_MILLISECOND = 1000L * 60 * 60;
@@ -47,27 +47,29 @@ public class JwtUtils {
         REFRESH_SECRET_KEY = Base64.getEncoder().encodeToString(REFRESH_SECRET_KEY.getBytes());
     }
 
-    public void isValidateToken(String token, TokenEnum access) {
+    public void isValidateToken(String token, TokenEnum access) throws JwtException{
+
         String key = ACCESS_SECRET_KEY;
         if(access == TokenEnum.REFRESH) key = REFRESH_SECRET_KEY;
 
-        jwtVerifier = JWT.require(Algorithm.HMAC256(key)).build();
-
         try {
-            jwtVerifier.verify(token);
-            log.info("Token validate");
+            Jwts.parser()
+                    .setSigningKey(key)
+                    .parseClaimsJws(token);
+
+            log.info("토큰 validate");
         } catch (TokenExpiredException te) {
             log.error(te.getMessage());
             throw new TokenExpiredException("토큰이 만료되었습니다.");
-        } catch (SignatureException sve) {
+        } catch (SignatureVerificationException sve) {
             log.error(sve.getMessage());
-            throw new SignatureException("토큰이 변조되었습니다.");
+            throw new SignatureVerificationException("토큰이 변조되었습니다.");
         } catch (JWTDecodeException jde) {
             log.error(jde.getMessage());
             throw new JWTDecodeException("토큰의 유형이 아닙니다.");
-        } catch (Exception e) {
+        } catch (JwtException  e) {
             log.error(e.getMessage());
-            throw new NotTokenException("이 토큰이 맞아요?");
+            throw new JwtException("Jwt Exception");
         }
     }
 
@@ -107,6 +109,9 @@ public class JwtUtils {
     }
 
     public static void main(String[] args) {
+
+        //isValidateToken("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhaHJmdXMzNEBnbWFpbC5jb20iLCJuaWNrbmFtZSI6ImJhYmEiLCJleHAiOjE2MTIzNDY4NDMsImlhdCI6MTYxMTc0MjA0M30.gY1Pnw5lORzXeR-Hsc6YdMCBgAYVCHsL3BW5o66b_zs"
+        //, TokenEnum.REFRESH);
         System.out.println(JWT.decode("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhaHJmdXMzNEBnbWFpbC5jb20iLCJleHAiOjE2MTAxMjAzMzIsImlhdCI6MTYxMDExNjczMn0.eswD_DvXp6ySkf3XnpPPKiUHuuZEeAA5z-IW-td5FvY").getSubject());
     }
 }
