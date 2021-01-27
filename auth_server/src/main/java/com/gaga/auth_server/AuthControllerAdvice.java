@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import javax.servlet.http.HttpServletRequest;
+import java.security.SignatureException;
 
 @Slf4j
 @ControllerAdvice
@@ -93,5 +94,21 @@ public class AuthControllerAdvice {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorMessage("서버내부오류입니다.", 500, req.getRequestURI()));
+    }
+
+    @ExceptionHandler(value = {NotTokenException.class})
+    public ResponseEntity<ErrorMessage> notTokenException(HttpServletRequest req, NotTokenException nte) {
+        log.error(nte.getMessage(), nte);
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorMessage(nte.getMessage(), HttpStatus.UNAUTHORIZED.value(), req.getRequestURI()));
+    }
+
+    @ExceptionHandler(value = {SignatureException.class})
+    public ResponseEntity<ErrorMessage> signatureException(HttpServletRequest req, SignatureException se) {
+        log.error(se.getMessage(), se);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorMessage(se.getMessage(), 500, req.getRequestURI()));
     }
 }

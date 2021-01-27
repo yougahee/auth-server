@@ -3,15 +3,15 @@ package com.gaga.auth_server.utils;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.gaga.auth_server.dto.request.UserInfoRequestDTO;
 import com.gaga.auth_server.dto.response.TokenDTO;
 import com.gaga.auth_server.enums.TokenEnum;
 import com.gaga.auth_server.exception.NotFoundException;
+import com.gaga.auth_server.exception.NotTokenException;
 import com.gaga.auth_server.exception.UnauthorizedException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -34,6 +34,8 @@ public class JwtUtils {
 
     private String CLAIM_NICKNAME = "nickname";
 
+    JWTVerifier jwtVerifier;
+
     //accessToken -> 1hour
     private static final long ACCESS_TOKEN_VALID_MILLISECOND = 1000L * 60 * 60;
     //refreshToken -> 1week
@@ -49,11 +51,24 @@ public class JwtUtils {
         String key = ACCESS_SECRET_KEY;
         if(access == TokenEnum.REFRESH) key = REFRESH_SECRET_KEY;
 
-        Jws<Claims> claims = Jwts.parser()
-                .setSigningKey(key)
-                .parseClaimsJws(token);
+        jwtVerifier = JWT.require(Algorithm.HMAC256(key)).build();
 
-        if(claims.getBody().getExpiration().before(new Date())) throw new UnauthorizedException();
+        try {
+            jwtVerifier.verify(token);
+            log.info("Token validate");
+        } catch (TokenExpiredException te) {
+            log.error(te.getMessage());
+            throw new TokenExpiredException("토큰이 만료되었습니다.");
+        } catch (SignatureException sve) {
+            log.error(sve.getMessage());
+            throw new SignatureException("토큰이 변조되었습니다.");
+        } catch (JWTDecodeException jde) {
+            log.error(jde.getMessage());
+            throw new JWTDecodeException("토큰의 유형이 아닙니다.");
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new NotTokenException("이 토큰이 맞아요?");
+        }
     }
 
     public TokenDTO generateToken(String email, String nickname) {
