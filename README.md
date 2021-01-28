@@ -1,10 +1,12 @@
 # :closed_lock_with_key: Authorization Server
 
-Server
-------
+## :pushpin: 사용 프레임워크 및 기술
 - Spring Boot
-- JPA
 - JWT ( JSON Web Token)
+- Google SMTP
+- JPA
+- DB : MySQL, Redis
+
 
 </br>
 </br>
@@ -236,6 +238,7 @@ dependencies {
 </br>
 </br>
 
+# :key: 인증 
 
 ## JWT(JSON Web Token)
 - header, payload, signature로 나누어진다.
@@ -294,7 +297,7 @@ dependencies {
 </br>
 
 
-비밀번호 암호화
+:key: 비밀번호 암호화
 =============
 
 - SHA-256
