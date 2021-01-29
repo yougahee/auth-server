@@ -26,7 +26,7 @@ public class UserController {
         responseMessage = new ResponseMessage();
     }
 
-    @ResponseStatus(code = HttpStatus.OK, reason = "겁나 신기하넹")
+    @ResponseStatus(code = HttpStatus.OK)
     @GetMapping("/")
     public String getState() {
         return "SEVER IS RUNNING";

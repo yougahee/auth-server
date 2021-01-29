@@ -55,8 +55,13 @@ public class UserService {
 
     //int -> void로 바꿔야함. -> 테스트를 위해
     public int sendEmail(String email) {
-        if (userInfoRepository.existsByEmail(email))
-            throw new AlreadyExistException(responseMSG.ALREADY_USED_EMAIL);
+        User user = findByEmailOrThrow(email);
+        if (userInfoRepository.existsByEmail(email)) {
+            if(user.getGrade() == grade.EMAIL_CHECK_COMPLETE)
+                throw new AlreadyCheckedException(responseMSG.ALREADY_CHECKED_EMAIL);
+            else if(user.getGrade() != grade.BASIC_GRADE)
+                throw new AlreadyExistException(responseMSG.ALREADY_USED_EMAIL);
+        }
 
         if (Boolean.TRUE.equals(redisTemplate.hasKey(email))) redisTemplate.delete(email);
 
@@ -104,8 +109,11 @@ public class UserService {
 
     public TokenDTO getUserToken(LoginDTO loginDTO) {
         String userEmail = loginDTO.getEmail().toLowerCase();
-
         User user = findByEmailOrThrow(userEmail);
+
+        if(user.getGrade() != grade.MEMBER || user.getGrade() != grade.MANAGER)
+            throw new NotFoundException(responseMSG.SIGN_UP_FIRST);
+
         if (!encryption.encodeWithSalt(loginDTO.getPassword(), user.getSalt()).equals(user.getPassword()))
             throw new NotFoundException(responseMSG.NOT_CORRECT_PW);
 

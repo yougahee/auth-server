@@ -81,6 +81,15 @@ public class AuthControllerAdvice {
                 .body(new ErrorMessage(ene.getMessage(), 400, req.getRequestURI()));
     }
 
+    // ## 오류는 아니고 그냥 건너뛰어라
+    @ExceptionHandler(value = {AlreadyCheckedException.class})
+    public ResponseEntity<ErrorMessage> alreadyCheckedException(HttpServletRequest req, AlreadyCheckedException ace) {
+        log.error(ace.getMessage(), ace);
+        return ResponseEntity
+                .status(HttpStatus.CONTINUE)
+                .body(new ErrorMessage(ace.getMessage(), 100, req.getRequestURI()));
+    }
+
     @ExceptionHandler(value = {NoNegativeNumberException.class})
     public ResponseEntity<ErrorMessage> noNegativeNumberException(HttpServletRequest req, NoNegativeNumberException nne) {
         log.error(nne.getMessage(), nne);

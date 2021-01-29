@@ -14,6 +14,7 @@ public class ResponseMessage {
             "10분 안에 인증번호를 입력해주세요. \n 인증번호는 ";
     public String SEND_LAST_CONTENT = " 입니다.";
     public String SEND_TEMP_PW_CODE = "임시 PASSWORD가 전송되었습니다.";
+    public String ALREADY_CHECKED_EMAIL = "이전에 이메일 인증한 기록이 있습니다.";
 
     //이메일
     public String NOT_FOUND_EMAIL = "존재하지 않은 이메일입니다.";
@@ -25,6 +26,7 @@ public class ResponseMessage {
     public String ALREADY_OUR_MEMBER = "이전에 회원가입한 정보가 있습니다.";
     public String SIGN_UP_SUCCESS = "회원가입 성공";
     public String SIGN_UP_FAIL = "회원가입 실패";
+    public String SIGN_UP_FIRST = "회원가입을 완료해주세요.";
 
     //login
     public String LOG_IN_SUCCESS = "로그인 성공";
