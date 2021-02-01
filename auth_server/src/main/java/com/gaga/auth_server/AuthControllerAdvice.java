@@ -2,7 +2,9 @@ package com.gaga.auth_server;
 
 import com.gaga.auth_server.dto.message.ErrorMessage;
 import com.gaga.auth_server.exception.*;
+import com.gaga.auth_server.utils.ResponseMessage;
 import io.jsonwebtoken.JwtException;
+import io.lettuce.core.RedisException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,7 @@ import java.security.SignatureException;
 @ControllerAdvice
 public class AuthControllerAdvice {
     ErrorMessage errorMessage = new ErrorMessage();
+    ResponseMessage responseMessage = new ResponseMessage();
 
     @ExceptionHandler(value = {MethodArgumentNotValidException.class})
     public ResponseEntity<ErrorMessage> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
@@ -98,28 +101,20 @@ public class AuthControllerAdvice {
                 .body(new ErrorMessage(nne.getMessage(), 400, req.getRequestURI()));
     }
 
-    @ExceptionHandler(value = {RedisConnectionFailureException.class})
-    public ResponseEntity<ErrorMessage> redisConnectionFailureException(HttpServletRequest req, RedisConnectionFailureException rcfe) {
-        log.error(rcfe.getMessage(), rcfe);
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorMessage("서버내부오류입니다.", 500, req.getRequestURI()));
-    }
-
-    @ExceptionHandler(value = {NotTokenException.class})
-    public ResponseEntity<ErrorMessage> notTokenException(HttpServletRequest req, NotTokenException nte) {
-        log.error(nte.getMessage(), nte);
-        return ResponseEntity
-                .badRequest()
-                .body(new ErrorMessage(nte.getMessage(), HttpStatus.UNAUTHORIZED.value(), req.getRequestURI()));
-    }
-
     @ExceptionHandler(value = {SignatureException.class})
     public ResponseEntity<ErrorMessage> signatureException(HttpServletRequest req, SignatureException se) {
         log.error(se.getMessage(), se);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorMessage(se.getMessage(), 500, req.getRequestURI()));
+    }
+    //token
+    @ExceptionHandler(value = {NotTokenException.class})
+    public ResponseEntity<ErrorMessage> notTokenException(HttpServletRequest req, NotTokenException nte) {
+        log.error(nte.getMessage(), nte);
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorMessage(nte.getMessage(), HttpStatus.UNAUTHORIZED.value(), req.getRequestURI()));
     }
 
     @ExceptionHandler(value = {SignatureVerificationException.class})
@@ -136,5 +131,22 @@ public class AuthControllerAdvice {
         return ResponseEntity
                 .badRequest()
                 .body(new ErrorMessage(je.getMessage(), HttpStatus.UNAUTHORIZED.value(), req.getRequestURI()));
+    }
+
+    //redis
+    @ExceptionHandler(value = {RedisException.class})
+    public ResponseEntity<ErrorMessage> signatureVerificationException(HttpServletRequest req, RedisException re) {
+        log.error(re.getMessage(), re);
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorMessage(re.getMessage(), 500, req.getRequestURI()));
+    }
+
+    @ExceptionHandler(value = {RedisConnectionFailureException.class})
+    public ResponseEntity<ErrorMessage> redisConnectionFailureException(HttpServletRequest req, RedisConnectionFailureException rcfe) {
+        log.error(rcfe.getMessage(), rcfe);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorMessage(responseMessage.INTERNAL_SERVER_ERROR, 500, req.getRequestURI()));
     }
 }

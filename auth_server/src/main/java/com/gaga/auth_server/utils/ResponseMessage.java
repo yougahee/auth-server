@@ -69,4 +69,7 @@ public class ResponseMessage {
 
     //탈퇴
     public String WITHDRAW_MORSE_SUCCESS = "탈퇴처리 완료되었습니다.";
+
+    //Redis
+    public String Redis_FAIL = "레디스 관련 에러입니다.";
 }

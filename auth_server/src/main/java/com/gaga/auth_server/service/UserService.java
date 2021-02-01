@@ -11,6 +11,7 @@ import com.gaga.auth_server.exception.*;
 import com.gaga.auth_server.model.User;
 import com.gaga.auth_server.repository.UserInfoRepository;
 import com.gaga.auth_server.utils.mail.CustomMailSender;
+import io.lettuce.core.RedisException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -67,7 +68,6 @@ public class UserService {
 
         int randomCode = (int) Math.floor(Math.random() * RANDOM_MAX_NUMBER) + RANDOM_MIN_NUMBER;
         String message = responseMSG.SEND_EMAIL_CONTENT + randomCode + responseMSG.SEND_LAST_CONTENT;
-        log.info("randomCode : " + randomCode);
 
         log.info("checkSendEmail redis start");
         redisTemplate.opsForValue().set(email, Integer.toString(randomCode));
@@ -94,7 +94,6 @@ public class UserService {
 
     @Transactional
     public void insertUser(UserInfoRequestDTO userInfo) {
-        log.info("insertUser start");
         User user = findByEmailOrThrow(userInfo.getEmail().toLowerCase());
         if (user.getGrade() == grade.MEMBER) throw new AlreadyExistException(responseMSG.ALREADY_OUR_MEMBER);
         if (user.getGrade() != grade.EMAIL_CHECK_COMPLETE)
@@ -104,7 +103,6 @@ public class UserService {
         user.setSalt(encryption.getSalt());
         user.setGrade(grade.MEMBER);
         userInfoRepository.save(user);
-        log.info("insertUser end");
     }
 
     public TokenDTO getUserToken(LoginDTO loginDTO) {
@@ -120,9 +118,13 @@ public class UserService {
         TokenDTO responseDTO = jwtUtils.generateToken(UserDTO.fromEntity(user));
         String refreshToken = responseDTO.getRefreshToken();
 
-        redisTemplate.opsForValue().set(refreshToken, userEmail);
-        redisTemplate.expire(refreshToken, 7, TimeUnit.DAYS);
-        log.info("redisTemplate end");
+        try {
+            redisTemplate.opsForValue().set(refreshToken, userEmail);
+            redisTemplate.expire(refreshToken, 7, TimeUnit.DAYS);
+        } catch (RedisException e) {
+            //## Redis에 저장하지 못했을 때, 다른 곳에 저장할 수 있는 방법을 찾아보자!
+            throw new RedisException(responseMSG.Redis_FAIL);
+        }
 
         user.setLoginDate(new Date());
         userInfoRepository.save(user);
