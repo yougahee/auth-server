@@ -87,11 +87,11 @@ public class JwtUtils {
     public TokenDTO createToken(Map<String, Object> claims, String sub) {
         Date now = new Date();
         String accessToken = Jwts.builder()
-                .setClaims(claims) // token에 담을 정보
-                .setSubject(sub) //token 제목
+                .setClaims(claims)
+                .setSubject(sub)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + ACCESS_TOKEN_VALID_MILLISECOND))
-                .signWith(SignatureAlgorithm.HS256, ACCESS_SECRET_KEY) //알고리즘, 키
+                .signWith(SignatureAlgorithm.HS256, ACCESS_SECRET_KEY)
                 .compact();
 
         String refreshToken = Jwts.builder()
@@ -113,12 +113,5 @@ public class JwtUtils {
         userDTO.setNickname(jwt.getClaim(CLAIM_NICKNAME).asString());
         userDTO.setUserIdx(jwt.getClaim(USER_IDX).asLong());
         return userDTO;
-    }
-
-    public static void main(String[] args) {
-
-        //isValidateToken("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhaHJmdXMzNEBnbWFpbC5jb20iLCJuaWNrbmFtZSI6ImJhYmEiLCJleHAiOjE2MTIzNDY4NDMsImlhdCI6MTYxMTc0MjA0M30.gY1Pnw5lORzXeR-Hsc6YdMCBgAYVCHsL3BW5o66b_zs"
-        //, TokenEnum.REFRESH);
-        System.out.println(JWT.decode("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhaHJmdXMzNEBnbWFpbC5jb20iLCJleHAiOjE2MTAxMjAzMzIsImlhdCI6MTYxMDExNjczMn0.eswD_DvXp6ySkf3XnpPPKiUHuuZEeAA5z-IW-td5FvY").getSubject());
     }
 }

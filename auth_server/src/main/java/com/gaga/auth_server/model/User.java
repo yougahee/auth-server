@@ -1,8 +1,6 @@
 package com.gaga.auth_server.model;
 
 import lombok.*;
-import org.springframework.data.annotation.LastModifiedDate;
-
 import javax.persistence.*;
 import java.util.Date;
 

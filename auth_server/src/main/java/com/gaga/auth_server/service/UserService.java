@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.util.Date;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -36,9 +37,6 @@ public class UserService {
     private ResponseMessage responseMSG;
     private UserGrade grade;
 
-    public final int RANDOM_MIN_NUMBER = 10000;
-    public final int RANDOM_MAX_NUMBER = 99999;
-
     @PostConstruct
     protected void init() {
         responseMSG = new ResponseMessage();
@@ -48,7 +46,6 @@ public class UserService {
         redisTemplate.setValueSerializer(new StringRedisSerializer());
     }
 
-    //test용 - 클라요청
     public void removeEmailRecord(String email) {
         User user = findByEmailOrThrow(email);
         userInfoRepository.delete(user);
@@ -57,7 +54,7 @@ public class UserService {
     //int -> void로 바꿔야함. -> 테스트를 위해
     public int sendEmail(String email) {
         User user = findByEmailOrThrow(email);
-        if (userInfoRepository.existsByEmail(email)) {
+        if (Boolean.TRUE.equals(userInfoRepository.existsByEmail(email))) {
             if(user.getGrade() == grade.EMAIL_CHECK_COMPLETE)
                 throw new AlreadyCheckedException(responseMSG.ALREADY_CHECKED_EMAIL);
             else if(user.getGrade() != grade.BASIC_GRADE)
@@ -66,15 +63,15 @@ public class UserService {
 
         if (Boolean.TRUE.equals(redisTemplate.hasKey(email))) redisTemplate.delete(email);
 
-        int randomCode = (int) Math.floor(Math.random() * RANDOM_MAX_NUMBER) + RANDOM_MIN_NUMBER;
-        String message = responseMSG.SEND_EMAIL_CONTENT + randomCode + responseMSG.SEND_LAST_CONTENT;
+        int authorizationCode = randomCode.randomEmailCode();
+        String message = responseMSG.SEND_EMAIL_CONTENT + authorizationCode + responseMSG.SEND_LAST_CONTENT;
 
         log.info("checkSendEmail redis start");
-        redisTemplate.opsForValue().set(email, Integer.toString(randomCode));
+        redisTemplate.opsForValue().set(email, Integer.toString(authorizationCode));
         redisTemplate.expire(email, 10, TimeUnit.MINUTES);
         log.info("checkSendEmail redis end");
         sendMail(email, responseMSG.SEND_CERTIFICATION, message);
-        return randomCode;
+        return authorizationCode;
     }
 
     public void checkEmailCode(String email, String code) {
@@ -178,7 +175,7 @@ public class UserService {
     }
 
     public void checkNickname(String nickname) {
-        if (userInfoRepository.existsByNickname(nickname))
+        if (Boolean.TRUE.equals(userInfoRepository.existsByNickname(nickname)))
             throw new AlreadyExistException(responseMSG.ALREADY_USED_NICKNAME);
     }
 

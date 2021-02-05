@@ -6,9 +6,13 @@ import java.util.Random;
 
 @Component
 public class RandomCode {
+    Random rnd = new Random();
+
+    public final int RANDOM_MIN_NUMBER = 10000;
+    public final int RANDOM_MAX_NUMBER = 90000;
+
     public String randomString() {
         StringBuilder sb = new StringBuilder();
-        Random rnd = new Random();
 
         for (int i = 0; i < 8; i++) {
             switch (i % 3) {
@@ -21,8 +25,14 @@ public class RandomCode {
                 case 2:
                     sb.append((rnd.nextInt(10)));
                     break;
+                default:
+                    break;
             }
         }
         return sb.toString();
+    }
+
+    public int randomEmailCode() {
+        return rnd.nextInt(RANDOM_MAX_NUMBER) + RANDOM_MIN_NUMBER;
     }
 }
