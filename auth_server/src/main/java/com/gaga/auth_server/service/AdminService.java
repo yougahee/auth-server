@@ -21,21 +21,19 @@ import java.util.stream.Collectors;
 @Service
 public class AdminService {
     private final UserInfoRepository userInfoRepository;
-    private ResponseMessage responseMSG;
     private UserGrade userGrade;
 
     @PostConstruct
     protected void init() {
-        responseMSG = new ResponseMessage();
         userGrade = new UserGrade();
     }
 
     public List<UserDTO> getAllUsers(String email, Pageable pageable) {
         User user = userInfoRepository.findByEmail(email)
-                .orElseThrow(() -> new NoExistEmailException(responseMSG.NOT_FOUND_EMAIL));
+                .orElseThrow(() -> new NoExistEmailException(ResponseMessage.NOT_FOUND_EMAIL));
 
         if(user.getGrade() != userGrade.MANAGER)
-            throw new UnauthorizedException(responseMSG.NO_AUTHORIZATION);
+            throw new UnauthorizedException(ResponseMessage.NO_AUTHORIZATION);
 
         Page<User> users = userInfoRepository.findAll(pageable);
         return users.stream().map(UserDTO::fromEntity).collect(Collectors.toList());

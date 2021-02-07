@@ -1,22 +1,15 @@
 package com.gaga.auth_server.utils;
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.gaga.auth_server.dto.UserDTO;
-import com.gaga.auth_server.dto.request.UserInfoRequestDTO;
 import com.gaga.auth_server.dto.response.TokenDTO;
 import com.gaga.auth_server.enums.TokenEnum;
 import com.gaga.auth_server.exception.NotFoundException;
-import com.gaga.auth_server.exception.NotTokenException;
 import com.gaga.auth_server.exception.SignatureVerificationException;
-import com.gaga.auth_server.exception.UnauthorizedException;
-import com.gaga.auth_server.model.User;
 import io.jsonwebtoken.*;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -37,8 +30,8 @@ public class JwtUtils {
     @Value("${jwt.secret.rt}")
     private String REFRESH_SECRET_KEY;
 
-    private final String CLAIM_NICKNAME = "nickname";
-    private final String USER_IDX = "user_idx";
+    private final static String CLAIM_NICKNAME = "nickname";
+    private final static String USER_IDX = "user_idx";
 
     //accessToken -> 1hour
     private static final long ACCESS_TOKEN_VALID_MILLISECOND = 1000L * 60 * 60;
@@ -51,7 +44,7 @@ public class JwtUtils {
         REFRESH_SECRET_KEY = Base64.getEncoder().encodeToString(REFRESH_SECRET_KEY.getBytes());
     }
 
-    public void isValidateToken(String token, TokenEnum access) throws JwtException{
+    public void isValidateToken(String token, TokenEnum access) {
 
         String key = ACCESS_SECRET_KEY;
         if(access == TokenEnum.REFRESH) key = REFRESH_SECRET_KEY;
@@ -60,20 +53,18 @@ public class JwtUtils {
             Jwts.parser()
                     .setSigningKey(key)
                     .parseClaimsJws(token);
-
-            log.info("토큰 validate");
         } catch (TokenExpiredException te) {
             log.error(te.getMessage());
-            throw new TokenExpiredException("토큰이 만료되었습니다.");
+            throw new TokenExpiredException(ResponseMessage.EXPIRED_TOKEN);
         } catch (SignatureVerificationException sve) {
             log.error(sve.getMessage());
-            throw new SignatureVerificationException("토큰이 변조되었습니다.");
+            throw new SignatureVerificationException(ResponseMessage.SIGNATURE_VERIFICATION_TOKEN);
         } catch (JWTDecodeException jde) {
             log.error(jde.getMessage());
-            throw new JWTDecodeException("토큰의 유형이 아닙니다.");
+            throw new JWTDecodeException(ResponseMessage.JWT_DECODE_TOKEN);
         } catch (JwtException  e) {
             log.error(e.getMessage());
-            throw new JwtException("Jwt Exception");
+            throw new JwtException(ResponseMessage.JWT_EXCEPTION);
         }
     }
 
@@ -106,7 +97,7 @@ public class JwtUtils {
     }
 
     public UserDTO decodeJWT(String token) {
-        if(token == null || token.equals("")) throw new NotFoundException("token이 없습니다.");
+        if(token == null || token.equals("")) throw new NotFoundException(ResponseMessage.NO_TOKEN);
         UserDTO userDTO = new UserDTO();
         DecodedJWT jwt = JWT.decode(token);
         userDTO.setEmail(jwt.getSubject());

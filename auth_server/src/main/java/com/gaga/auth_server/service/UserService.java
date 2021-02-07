@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.util.Date;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -34,12 +33,10 @@ public class UserService {
     private final JwtUtils jwtUtils;
     private final RandomCode randomCode;
     private final Encryption encryption;
-    private ResponseMessage responseMSG;
     private UserGrade grade;
 
     @PostConstruct
     protected void init() {
-        responseMSG = new ResponseMessage();
         grade = new UserGrade();
 
         redisTemplate.setKeySerializer(new StringRedisSerializer());
@@ -51,26 +48,25 @@ public class UserService {
         userInfoRepository.delete(user);
     }
 
-    //int -> void로 바꿔야함. -> 테스트를 위해
     public int sendEmail(String email) {
         User user = findByEmailOrThrow(email);
         if (Boolean.TRUE.equals(userInfoRepository.existsByEmail(email))) {
             if(user.getGrade() == grade.EMAIL_CHECK_COMPLETE)
-                throw new AlreadyCheckedException(responseMSG.ALREADY_CHECKED_EMAIL);
+                throw new AlreadyCheckedException(ResponseMessage.ALREADY_CHECKED_EMAIL);
             else if(user.getGrade() != grade.BASIC_GRADE)
-                throw new AlreadyExistException(responseMSG.ALREADY_USED_EMAIL);
+                throw new AlreadyExistException(ResponseMessage.ALREADY_USED_EMAIL);
         }
 
         if (Boolean.TRUE.equals(redisTemplate.hasKey(email))) redisTemplate.delete(email);
 
         int authorizationCode = randomCode.randomEmailCode();
-        String message = responseMSG.SEND_EMAIL_CONTENT + authorizationCode + responseMSG.SEND_LAST_CONTENT;
+        String message = ResponseMessage.SEND_EMAIL_CONTENT + authorizationCode + ResponseMessage.SEND_LAST_CONTENT;
 
         log.info("checkSendEmail redis start");
         redisTemplate.opsForValue().set(email, Integer.toString(authorizationCode));
         redisTemplate.expire(email, 10, TimeUnit.MINUTES);
         log.info("checkSendEmail redis end");
-        sendMail(email, responseMSG.SEND_CERTIFICATION, message);
+        sendMail(email, ResponseMessage.SEND_CERTIFICATION, message);
         return authorizationCode;
     }
 
@@ -78,7 +74,7 @@ public class UserService {
         Object object = redisTemplate.opsForValue().get(email);
 
         if (object == null || !code.equals(object.toString()))
-            throw new NotFoundException(responseMSG.NOT_FOUND_CODE);
+            throw new NotFoundException(ResponseMessage.NOT_FOUND_CODE);
 
         redisTemplate.delete(email);
         User user = User.builder()
@@ -92,9 +88,9 @@ public class UserService {
     @Transactional
     public void insertUser(UserInfoRequestDTO userInfo) {
         User user = findByEmailOrThrow(userInfo.getEmail().toLowerCase());
-        if (user.getGrade() == grade.MEMBER) throw new AlreadyExistException(responseMSG.ALREADY_OUR_MEMBER);
+        if (user.getGrade() == grade.MEMBER) throw new AlreadyExistException(ResponseMessage.ALREADY_OUR_MEMBER);
         if (user.getGrade() != grade.EMAIL_CHECK_COMPLETE)
-            throw new UnauthorizedException(responseMSG.VERIFY_EMAIL_FIRST);
+            throw new UnauthorizedException(ResponseMessage.VERIFY_EMAIL_FIRST);
         user.setNickname(userInfo.getNickname());
         user.setPassword(encryption.encode(userInfo.getPassword()));
         user.setSalt(encryption.getSalt());
@@ -107,10 +103,10 @@ public class UserService {
         User user = findByEmailOrThrow(userEmail);
 
         if(user.getGrade() != grade.MEMBER || user.getGrade() != grade.MANAGER)
-            throw new NotFoundException(responseMSG.SIGN_UP_FIRST);
+            throw new NotFoundException(ResponseMessage.SIGN_UP_FIRST);
 
         if (!encryption.encodeWithSalt(loginDTO.getPassword(), user.getSalt()).equals(user.getPassword()))
-            throw new NotFoundException(responseMSG.NOT_CORRECT_PW);
+            throw new NotFoundException(ResponseMessage.NOT_CORRECT_PW);
 
         TokenDTO responseDTO = jwtUtils.generateToken(UserDTO.fromEntity(user));
         String refreshToken = responseDTO.getRefreshToken();
@@ -120,7 +116,7 @@ public class UserService {
             redisTemplate.expire(refreshToken, 7, TimeUnit.DAYS);
         } catch (RedisException e) {
             //## Redis에 저장하지 못했을 때, 다른 곳에 저장할 수 있는 방법을 찾아보자!
-            throw new RedisException(responseMSG.Redis_FAIL);
+            throw new RedisException(ResponseMessage.REDIS_FAIL);
         }
 
         user.setLoginDate(new Date());
@@ -132,7 +128,7 @@ public class UserService {
         jwtUtils.isValidateToken(refreshToken, TokenEnum.REFRESH);
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(refreshToken)))
-            throw new UnauthorizedException(responseMSG.EXPIRED_TOKEN);
+            throw new UnauthorizedException(ResponseMessage.EXPIRED_TOKEN);
 
         UserDTO userDTO = jwtUtils.decodeJWT(refreshToken);
         TokenDTO tokenDTO = jwtUtils.generateToken(userDTO);
@@ -144,19 +140,21 @@ public class UserService {
         return tokenDTO;
     }
 
+    @Transactional
     public void findPassword(String email) {
         User user = findByEmailOrThrow(email);
         String tempPW = randomCode.randomString();
 
-        sendMail(user.getEmail(), responseMSG.TEMP_PW, tempPW);
+        sendMail(user.getEmail(), ResponseMessage.TEMP_PW, tempPW);
         insertPassword(user, tempPW);
     }
 
+    @Transactional
     public void changePassword(String email, String oldPW, String pw) {
         User user = findByEmailOrThrow(email);
 
         if (!encryption.encodeWithSalt(user.getPassword(), user.getSalt()).equals(oldPW))
-            throw new NotFoundException(responseMSG.NOT_CORRECT_PW);
+            throw new NotFoundException(ResponseMessage.NOT_CORRECT_PW);
 
         insertPassword(user, pw);
     }
@@ -176,12 +174,12 @@ public class UserService {
 
     public void checkNickname(String nickname) {
         if (Boolean.TRUE.equals(userInfoRepository.existsByNickname(nickname)))
-            throw new AlreadyExistException(responseMSG.ALREADY_USED_NICKNAME);
+            throw new AlreadyExistException(ResponseMessage.ALREADY_USED_NICKNAME);
     }
 
     public User findByEmailOrThrow(String email) {
         return userInfoRepository.findByEmail(email)
-                .orElseThrow(() -> new NoExistEmailException(responseMSG.NOT_FOUND_EMAIL));
+                .orElseThrow(() -> new NoExistEmailException(ResponseMessage.NOT_FOUND_EMAIL));
     }
 
     public void sendMail(String sendEmail, String title, String sendMessage) {

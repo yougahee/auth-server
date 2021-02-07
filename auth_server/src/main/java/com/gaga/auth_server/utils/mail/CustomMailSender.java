@@ -1,5 +1,6 @@
 package com.gaga.auth_server.utils.mail;
 
+import com.gaga.auth_server.utils.ResponseMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +18,7 @@ public class CustomMailSender {
 
     public void sendMail(MailDTO mailDTO) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setSubject("[Morse] 메일 전송");
+        message.setSubject(ResponseMessage.SEND_EMAIL_TITLE);
         message.setFrom(FROM_EMAIL);
         message.setTo(mailDTO.getAddress());
         message.setText(mailDTO.getMessage());

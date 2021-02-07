@@ -1,5 +1,6 @@
 package com.gaga.auth_server.dto.message;
 
+import com.gaga.auth_server.utils.ResponseMessage;
 import com.gaga.auth_server.utils.TimestampUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,8 +11,6 @@ public class Message {
     String timestamp;
     private String message;
     private Object data;
-
-    private static final String DEFAULT_KEY = "result";
 
     public Message() {
         this.timestamp = TimestampUtils.getNow();
@@ -24,7 +23,7 @@ public class Message {
 
     public Message(Object result) {
         this.timestamp = TimestampUtils.getNow();
-        this.message = "success";
+        this.message = ResponseMessage.SUCCESS;
         this.data = result;
     }
 

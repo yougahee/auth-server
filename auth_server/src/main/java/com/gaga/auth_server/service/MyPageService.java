@@ -9,7 +9,6 @@ import com.gaga.auth_server.utils.ResponseMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
 @Slf4j
@@ -18,15 +17,8 @@ import javax.transaction.Transactional;
 public class MyPageService {
     private final UserService userService;
     private final UserInfoRepository userInfoRepository;
-    private ResponseMessage ResponseMessage;
-
-    @PostConstruct
-    protected void init() {
-        ResponseMessage = new ResponseMessage();
-    }
 
     public MyPageDTO getMyProfile(String email) {
-        log.info("my profile get");
         User user = userInfoRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException(ResponseMessage.NOT_FOUND_EMAIL));
         return MyPageDTO.builder()

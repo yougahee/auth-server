@@ -1,5 +1,6 @@
 package com.gaga.auth_server.dto.request;
 
+import com.gaga.auth_server.utils.ResponseMessage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,7 +10,7 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 @Getter
 public class UserEmailDTO {
-    @NotBlank(message = "이메일은 필수 입력입니다.")
-    @Email(message = "이메일 형식에 맞지 않습니다.")
+    @NotBlank(message = ResponseMessage.REQUIRED_EMAIL)
+    @Email(message = ResponseMessage.NOT_EMAIL_FORM)
     private String email;
 }

@@ -1,5 +1,6 @@
 package com.gaga.auth_server.dto.request;
 
+import com.gaga.auth_server.utils.ResponseMessage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,8 +12,8 @@ import javax.validation.constraints.Pattern;
 public class UserPasswordDTO {
     private String old_password;
 
-    @NotBlank(message = "비밀번호는 필수 입력입니다.")
+    @NotBlank(message = ResponseMessage.REQUIRED_PASSWORD)
     @Pattern(regexp="(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\\W)(?=\\S+$).{8,20}",
-            message = "비밀번호는 영문 대,소문자와 숫자, 특수기호가 적어도 1개 이상씩 포함된 8자 ~ 20자의 비밀번호여야 합니다.")
+            message = ResponseMessage.NOT_PASSWORD_FORM)
     private String password;
 }
