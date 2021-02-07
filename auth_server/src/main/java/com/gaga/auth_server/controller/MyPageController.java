@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import javax.annotation.PostConstruct;
 
 @Slf4j
 @CrossOrigin("*")
@@ -17,10 +16,6 @@ import javax.annotation.PostConstruct;
 @RestController
 public class MyPageController {
     private final MyPageService myPageService;
-    private ResponseMessage ResponseMessage;
-
-    @PostConstruct
-    protected void init() { ResponseMessage = new ResponseMessage(); }
 
     @GetMapping("")
     public ResponseEntity<Message> getMyProfileInfo(@RequestHeader(value = "x-forward-email") String email) {

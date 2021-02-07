@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 
 @Slf4j
@@ -19,12 +18,6 @@ import javax.validation.Valid;
 @RestController
 public class UserController {
     private final UserService userService;
-    private ResponseMessage responseMessage;
-
-    @PostConstruct
-    protected void init() {
-        responseMessage = new ResponseMessage();
-    }
 
     @ResponseStatus(code = HttpStatus.OK)
     @GetMapping("/")
@@ -43,7 +36,7 @@ public class UserController {
         TokenDTO tokenDTO = userService.getUserToken(loginDTO);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(tokenDTO, responseMessage.LOG_IN_SUCCESS));
+                .body(new Message(tokenDTO, ResponseMessage.LOG_IN_SUCCESS));
     }
 
     @PostMapping("/signup")
@@ -67,7 +60,7 @@ public class UserController {
         int code = userService.sendEmail(userEmailDTO.getEmail().toLowerCase());
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message("빠른테스트를 위해 : " + code , responseMessage.SEND_EMAIL));
+                .body(new Message("빠른테스트를 위해 : " + code , ResponseMessage.SEND_EMAIL));
     }
 
     @PostMapping("/check/email-code")
@@ -83,7 +76,7 @@ public class UserController {
         TokenDTO tokenDTO = userService.getReissueToken(refreshToken);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new Message(tokenDTO, responseMessage.REISSUE_REFRESH_TOKEN));
+                .body(new Message(tokenDTO, ResponseMessage.REISSUE_REFRESH_TOKEN));
     }
 
     @GetMapping("/find-pw")

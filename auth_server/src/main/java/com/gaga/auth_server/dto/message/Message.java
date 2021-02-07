@@ -1,10 +1,8 @@
 package com.gaga.auth_server.dto.message;
 
+import com.gaga.auth_server.utils.TimestampUtils;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Setter
 @Getter
@@ -16,28 +14,23 @@ public class Message {
     private static final String DEFAULT_KEY = "result";
 
     public Message() {
-        this.timestamp = convertDateFormat(LocalDateTime.now());
+        this.timestamp = TimestampUtils.getNow();
     }
 
     public Message(String message) {
-        this.timestamp = convertDateFormat(LocalDateTime.now());
+        this.timestamp = TimestampUtils.getNow();
         this.message = message;
     }
 
     public Message(Object result) {
-        this.timestamp = convertDateFormat(LocalDateTime.now());
+        this.timestamp = TimestampUtils.getNow();
         this.message = "success";
         this.data = result;
     }
 
     public Message(Object result, String message) {
-        this.timestamp = convertDateFormat(LocalDateTime.now());
+        this.timestamp = TimestampUtils.getNow();
         this.message = message;
         this.data = result;
-    }
-
-    private String convertDateFormat(LocalDateTime now) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return now.format(formatter);
     }
 }

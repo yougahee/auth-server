@@ -1,10 +1,8 @@
 package com.gaga.auth_server.dto.message;
 
+import com.gaga.auth_server.utils.TimestampUtils;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Getter
 @Setter
@@ -17,20 +15,15 @@ public class ErrorMessage {
 	public ErrorMessage() { }
 
 	public ErrorMessage(String errorMessage, int status, String path) {
-		this.timestamp = convertDateFormat(LocalDateTime.now());
+		this.timestamp = TimestampUtils.getNow();
 		this.status = status;
 		this.message = errorMessage;
 		this.path = path;
 	}
 
 	public ErrorMessage(String errorMessage, String path) {
-		this.timestamp = convertDateFormat(LocalDateTime.now());
+		this.timestamp = TimestampUtils.getNow();
 		this.message = errorMessage;
 		this.path = path;
-	}
-
-	private String convertDateFormat(LocalDateTime now) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		return now.format(formatter);
 	}
 }
