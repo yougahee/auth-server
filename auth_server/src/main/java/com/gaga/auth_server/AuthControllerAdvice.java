@@ -22,7 +22,6 @@ import java.security.SignatureException;
 @ControllerAdvice
 public class AuthControllerAdvice {
     ErrorMessage errorMessage = new ErrorMessage();
-    ResponseMessage responseMessage = new ResponseMessage();
 
     @ExceptionHandler(value = {MethodArgumentNotValidException.class})
     public ResponseEntity<ErrorMessage> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
@@ -147,6 +146,6 @@ public class AuthControllerAdvice {
         log.error(rcfe.getMessage(), rcfe);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorMessage(responseMessage.INTERNAL_SERVER_ERROR, 500, req.getRequestURI()));
+                .body(new ErrorMessage(ResponseMessage.INTERNAL_SERVER_ERROR, 500, req.getRequestURI()));
     }
 }

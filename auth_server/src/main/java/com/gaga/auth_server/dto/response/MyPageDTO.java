@@ -13,5 +13,5 @@ import java.util.Set;
 public class MyPageDTO {
     String nickname;
     Long point;
-    Set<String> followNickname = new HashSet<>();
+    final Set<String> followNickname = new HashSet<>();
 }

@@ -9,20 +9,20 @@ public class TimestampUtils {
 	private static final String RESPONSE_TIMESTAMP_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
 	private static final DateTimeFormatter responseDateTimeFormatter = DateTimeFormatter.ofPattern(RESPONSE_TIMESTAMP_PATTERN);
-	private static final SimpleDateFormat responseSimpleDateFormatter = new SimpleDateFormat(RESPONSE_TIMESTAMP_PATTERN);
+	private SimpleDateFormat responseSimpleDateFormatter = new SimpleDateFormat(RESPONSE_TIMESTAMP_PATTERN);
 
 	private TimestampUtils() {
 	}
 
-	public static String getNow() {
+	public String getNow() {
 		return convertResponseDateFormat(LocalDateTime.now());
 	}
 
-	public static String convertResponseDateFormat(LocalDateTime time) {
+	public String convertResponseDateFormat(LocalDateTime time) {
 		return time.format(responseDateTimeFormatter);
 	}
 
-	public static String convertResponseDateFormat(Date time) {
+	public String convertResponseDateFormat(Date time) {
 		return responseSimpleDateFormatter.format(time);
 	}
 }
